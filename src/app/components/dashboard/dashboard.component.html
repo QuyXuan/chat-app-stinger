@@ -1,1 +1,5 @@
-<p>dashboard works!</p>
+<app-side-bar (onToggleSideNav)="onToggleSideNav($event)"></app-side-bar>
+<app-body
+  [collapsed]="isSideNavCollapsed"
+  [screenWidth]="screenWidth"
+></app-body>

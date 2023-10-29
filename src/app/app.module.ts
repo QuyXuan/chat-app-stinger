@@ -8,6 +8,9 @@ import { AppComponent } from './app.component';
 import { LoginPageComponent } from './components/login-page/login-page.component';
 import { SignupPageComponent } from './components/signup-page/signup-page.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { SideBarComponent } from './components/dashboard/side-bar/side-bar.component';
+import { ChatPageComponent } from './components/dashboard/body/chat-page/chat-page.component';
+import { BodyComponent } from './components/dashboard/body/body.component';
 
 // Firebase config
 import { environment } from '../environments/environment';
@@ -29,6 +32,9 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
     LoginPageComponent,
     SignupPageComponent,
     DashboardComponent,
+    SideBarComponent,
+    ChatPageComponent,
+    BodyComponent,
   ],
   imports: [
     BrowserModule,
