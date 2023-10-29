@@ -1,0 +1,35 @@
+<div class="sidenav" [ngClass]="collapsed ? 'sidenav-collapse' : ''">
+  <div class="logo-container">
+    <button class="logo" (click)="toggleCollapse()">
+      <img
+        src="https://media.istockphoto.com/vectors/default-profile-picture-avatar-photo-placeholder-vector-illustration-vector-id1223671392?k=6&m=1223671392&s=170667a&w=0&h=zP3l7WJinOFaGb2i1F4g8IS2ylw0FlIaa6x3tP9sebU="
+        alt="Avatar"
+        class="avatar-img"
+      />
+    </button>
+    <div class="logo-text" *ngIf="collapsed">Stinger</div>
+    <button class="btn-collapse" *ngIf="collapsed" (click)="closeSideNav()">
+      <fa-icon [icon]="closeIcon" class="collapse-icon"></fa-icon>
+    </button>
+  </div>
+  <ul class="sidenav-nav">
+    <li
+      class="sidenav-nav-item"
+      *ngFor="let data of sideBarData; let last = last"
+    >
+      <a
+        class="sidenav-nav-link"
+        [routerLink]="[
+          '/dashboard',
+          { outlets: { secondary: [data.routerLink] } }
+        ]"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        (click)="last ? logout() : null"
+      >
+        <fa-icon [icon]="data.icon" class="sidenav-link-icon"></fa-icon>
+        <div class="sidenav-link-text" *ngIf="collapsed">{{ data.label }}</div>
+      </a>
+    </li>
+  </ul>
+</div>

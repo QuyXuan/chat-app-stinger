@@ -56,7 +56,6 @@ export class LoginPageComponent implements OnInit {
   }
 
   onSubmit() {
-    debugger;
     if (this.loginForm.valid) {
       this.authService.signInWithEmailAndPassword(
         this.loginForm.value.email,

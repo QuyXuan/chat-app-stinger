@@ -1,0 +1,124 @@
+.avatar-img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    /* border: 3px solid #ffffff; */
+}
+
+.sidenav {
+    background: #263238;
+    transition: all .5s ease;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    width: 5rem;
+    height: 100vh;
+    box-shadow: 0.063rem 0 1.25rem 0 #8690a3;
+}
+
+.sidenav .logo-container {
+    display: flex;
+    align-items: center;
+    padding: 0.938rem 0.938rem 0 0.938rem;
+    width: 100%;
+}
+
+.sidenav .logo-container .logo {
+    background: #ffffff;
+    text-align: center;
+    width: 3rem;
+    min-width: 3rem;
+    border-radius: 50%;
+    padding: 0.313rem;
+    font-size: 24px;
+    font-weight: 900;
+    cursor: pointer;
+    border: none;
+}
+
+.sidenav .logo-container .logo-text {
+    margin-left: 1.5rem;
+    font-style: 24px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.sidenav .logo-container .btn-collapse {
+    margin-left: auto;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background-color: transparent;
+    border: none;
+}
+
+.sidenav .logo-container .btn-collapse .collapse-icon {
+    color: #ffffff;
+    font-size: 24px;
+}
+
+.sidenav-collapse {
+    width: 16.5625rem;
+}
+
+.sidenav-nav {
+    list-style: none;
+    padding: 0.938rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: calc(100% - 3.65rem);
+    cursor: pointer;
+    gap: 30px;
+}
+
+.sidenav-nav .sidenav-nav-item {
+    width: 100%;
+    margin-bottom: 0.625rem;
+}
+
+.sidenav-nav .sidenav-nav-item:first-child {
+    margin-top: 30px;
+}
+
+.sidenav-nav .sidenav-nav-item:nth-last-child(2) {
+    margin-top: 150px;
+}
+
+.sidenav-nav .sidenav-nav-item .sidenav-nav-link {
+    display: flex;
+    align-items: center;
+    height: 3rem;
+    color: #f3f3f3;
+    text-decoration: none;
+    border-radius: 0.625rem;
+    transition: all .3s ease;
+}
+
+.sidenav-nav .sidenav-nav-item .sidenav-nav-link .sidenav-link-icon {
+    font-size: 17px;
+    width: 2rem;
+    min-width: 2rem;
+    margin: 0 0.5rem;
+    text-align: center;
+}
+
+.sidenav-nav .sidenav-nav-item .sidenav-nav-link .sidenav-link-text {
+    margin-left: 1.5rem;
+}
+
+.sidenav-nav .sidenav-nav-item:hover .sidenav-nav-link {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.active {
+    background-color: #ffffff;
+}
+
+.active .sidenav-link-icon, .active .sidenav-link-text {
+    color: #000000;
+}
