@@ -107,6 +107,7 @@ export class AuthService {
 
   saveAccessToken(accessToken: string) {
     localStorage.setItem('access_token', accessToken);
+
   }
 
   getAccessToken() {
@@ -119,6 +120,23 @@ export class AuthService {
 
   createToken(data: any) {
     return '';
+  }
+
+  getCookie(keyCookie: string): string | undefined {
+    const cookies = document.cookie.split(";");
+    for (const cookie of cookies) {
+      const [cookieKey, cookieValue] = cookie.trim().split('=');
+      if (cookieKey === keyCookie) {
+        return decodeURIComponent(cookieValue);
+      }
+    }
+    return undefined;
+  }
+
+  setCookie(name: string, value: string, hours: number = 24): void {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + hours * 60 * 60 * 1000);
+    document.cookie = name + "=" + value + ";expires=" + expires.toUTCString();
   }
 
   isLoggedIn(): boolean {

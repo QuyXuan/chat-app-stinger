@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 // Components
 import { LoginPageComponent } from './components/login-page/login-page.component';
 import { SignupPageComponent } from './components/signup-page/signup-page.component';
+import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { SideBarComponent } from './components/dashboard/side-bar/side-bar.component';
 import { ChatPageComponent } from './components/dashboard/body/chat-page/chat-page.component';
@@ -43,13 +44,14 @@ import { ChatSideComponent } from './components/dashboard/body/chat-page/chat-si
     SubLevelMenuComponent,
     NotificationPageComponent,
     ChatSideComponent,
+    PageNotFoundComponent
   ],
   imports: [
-    BrowserModule,
-    AppRoutingModule,
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideDatabase(() => getDatabase()),
     provideFirestore(() => getFirestore()),
+    BrowserModule,
+    AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
     AngularFireStorageModule,
@@ -63,4 +65,4 @@ import { ChatSideComponent } from './components/dashboard/body/chat-page/chat-si
   providers: [],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }

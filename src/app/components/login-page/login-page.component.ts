@@ -1,14 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
-import { Router } from '@angular/router';
-import { NgToastService } from 'ng-angular-popup';
+import { Component, OnInit, inject } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/services/auth/auth.service';
-import ValidateForm from 'src/app/helpers/validate-form';
 import { constants } from 'src/app/constants';
 import {
   faEye,
@@ -27,8 +19,8 @@ export class LoginPageComponent implements OnInit {
   eyeIcon: any = faEye;
   isText: boolean = false;
   loginForm!: FormGroup;
-  public resetPasswordEmail!: string;
-  public isValidEmail!: boolean;
+  resetPasswordEmail!: string;
+  isValidEmail!: boolean;
   faIcon = { faEnvelope: faEnvelope, faLock: faLock };
 
   ngOnInit(): void {
@@ -47,7 +39,7 @@ export class LoginPageComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder
-  ) {}
+  ) { }
 
   passToggle() {
     this.isText = !this.isText;
