@@ -1,0 +1,136 @@
+/* chat content */
+
+.main-chat-content {
+    display: flex;
+    gap: 6%;
+    height: 105%;
+}
+
+.chat-content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.chat-content .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    padding: 10px 20px;
+}
+
+.chat-content .header::after {
+    display: inline-block;
+    position: absolute;
+    content: "";
+    left: 10px;
+    right: 25px;
+    bottom: 0;
+    height: 2px;
+    background: #e2dfda;
+    border-radius: 1px;
+}
+
+.chat-content .user-info {
+    display: flex;
+    align-items: center;
+}
+
+.chat-content .header .avatar {
+    display: flex;
+    position: relative;
+    margin-right: 15px;
+}
+
+.chat-content .avatar .status-circle {
+    position: absolute;
+    bottom: 0;
+    right: 5px;
+    color: #28ac2d;
+}
+
+.chat-content .avatar .status-circle i {
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+}
+
+.chat-content .header img {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffffff;
+}
+
+.chat-content .header .list-btn {
+    display: flex;
+    align-items: center;
+}
+
+.chat-content .header .btn-item {
+    outline: none;
+    border: none;
+    font-size: 15px;
+    padding: 20px 20px;
+    background-color: #ffffff;
+    border-radius: 50%;
+}
+
+.chat-content .header .btn-item:hover {
+    background-color: #f6f6f6;
+    cursor: pointer;
+}
+
+.chat-content .user-info .user-name {
+    font-weight: 500;
+    font-size: 1.6rem;
+    line-height: 1.75;
+    color: #10375c;
+    margin-bottom: 0;
+}
+
+.chat-message {
+    height: 75%;
+}
+
+.chat-input {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 15%;
+}
+
+.chat-input .input-info {
+    display: flex;
+    align-items: center;
+    border-radius: 20px;
+    overflow: hidden;
+    padding: 10px 20px;
+    margin: 0 10px;
+    box-shadow: rgba(0, 0, 0, 0.2) 2px 2px 2px 2px;
+    height: 50%;
+    background: #f4f4f4;
+}
+
+.chat-input .input-content {
+    width: 110%;
+    border: none;
+    outline: none;
+    font-size: 17px;
+    font-weight: 500;
+    margin-left: 10px;
+    background: #f4f4f4;
+}
+
+.chat-input .input-info .input-icon {
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.chat-input .input-info .input-icon:is(:last-child) {
+    margin-left: 30px;
+}

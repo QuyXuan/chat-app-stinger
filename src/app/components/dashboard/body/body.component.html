@@ -1,3 +1,8 @@
 <div class="body" [ngClass]="getBodyClass()">
-  <router-outlet name="secondary"></router-outlet>
+  <div class="side-body-container">
+    <router-outlet name="side-body"></router-outlet>
+  </div>
+  <div class="body-container">
+    <router-outlet name="body"></router-outlet>
+  </div>
 </div>

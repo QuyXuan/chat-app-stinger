@@ -6,15 +6,22 @@ import {
   Output,
 } from '@angular/core';
 import {
-  faUserFriends,
-  faMessage,
-  faBell,
-  faGear,
-  faRightFromBracket,
   faTimes,
+  faChevronCircleRight,
+  faChevronCircleDown,
 } from '@fortawesome/free-solid-svg-icons';
 import { NgToastService } from 'ng-angular-popup';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { sideBarRoutingData } from './side-bar-routing-data';
+import { ISidebarData, fadeInOut } from './side-bar-helpers';
+import {
+  animate,
+  keyframes,
+  style,
+  transition,
+  trigger,
+} from '@angular/animations';
+import { Router } from '@angular/router';
 
 interface SideNavToggle {
   screenWidth: number;
@@ -25,27 +32,30 @@ interface SideNavToggle {
   selector: 'app-side-bar',
   templateUrl: './side-bar.component.html',
   styleUrls: ['./side-bar.component.css'],
+  animations: [
+    fadeInOut,
+    trigger('rotate', [
+      transition(':enter', [
+        animate(
+          '1000ms',
+          keyframes([
+            style({ transform: 'rotate(0deg)', offset: '0' }),
+            style({ transform: 'rotate(2turn)', offset: '1' }),
+          ])
+        ),
+      ]),
+    ]),
+  ],
 })
 export class SideBarComponent implements OnInit {
   @Output() onToggleSideNav: EventEmitter<SideNavToggle> = new EventEmitter();
   screenWidth = 0;
   collapsed = false;
   closeIcon = faTimes;
-  sideBarData = [
-    { label: 'Chats', icon: faMessage, routerLink: 'chat' },
-    {
-      label: 'People',
-      icon: faUserFriends,
-      routerLink: 'people',
-    },
-    {
-      label: 'Notifications',
-      icon: faBell,
-      routerLink: '/notification',
-    },
-    { label: 'Settings', icon: faGear, routerLink: 'setting' },
-    { label: 'Logout', icon: faRightFromBracket, routerLink: '' },
-  ];
+  faChevronCircleRight = faChevronCircleRight;
+  faChevronCircleDown = faChevronCircleDown;
+  sideBarData = sideBarRoutingData;
+  multiple: boolean = false;
 
   @HostListener('window:resize', ['$event'])
   onResize() {
@@ -60,10 +70,33 @@ export class SideBarComponent implements OnInit {
   }
   constructor(
     private authService: AuthService,
-    private toastService: NgToastService
+    private toastService: NgToastService,
+    private router: Router
   ) {}
   ngOnInit(): void {
     this.screenWidth = window.innerWidth;
+    this.toggleCollapse();
+  }
+
+  getRouterLink(data: ISidebarData) {
+    if (data.routerLink === 'chat') {
+      return [
+        '/dashboard',
+        {
+          outlets: {
+            body: [data.routerLink],
+            'side-body': [data.sideRouterLink],
+          },
+        },
+      ];
+    }
+    if (data.outlet === 'body') {
+      return ['/dashboard', { outlets: { body: [data.routerLink] } }];
+    }
+    if (data.outlet === 'side-body') {
+      return ['/dashboard', { outlets: { 'side-body': [data.routerLink] } }];
+    }
+    return [''];
   }
 
   toggleCollapse() {
@@ -80,6 +113,21 @@ export class SideBarComponent implements OnInit {
       collapsed: this.collapsed,
       screenWidth: this.screenWidth,
     });
+  }
+
+  handleClick(item: ISidebarData) {
+    if (!this.multiple) {
+      for (let modelItem of this.sideBarData) {
+        if (item !== modelItem && modelItem.expanded) {
+          modelItem.expanded = false;
+        }
+      }
+    }
+    item.expanded = !item.expanded;
+  }
+
+  getActiveClass(data: ISidebarData): string {
+    return this.router.url.includes(data.routerLink) ? 'active' : '';
   }
 
   logout() {

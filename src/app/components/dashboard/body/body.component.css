@@ -1,4 +1,5 @@
 .body {
+    display: flex;
     width: calc(100% - 5rem);
     height: 100vh;
     margin-left: 5rem;
@@ -7,15 +8,24 @@
     top: 0;
     transition: all .5s ease;
     background: #f4f7fa;
-    padding: 3rem;
+    padding: 2.5rem 1.5rem;
 }
 
 .body-trimmed {
-    width: calc(100% - 16.5625rem);
-    margin-left: 16.5625rem;
+    width: calc(100% - 15rem);
+    margin-left: 15rem;
 }
 
 .body-md-screen {
     width: calc(100% - 5rem);
     margin-left: 5rem;
+}
+
+.side-body-container {
+    padding-right: 20px;
+    width: 30%;
+}
+
+.body-container {
+    width: 70%;
 }
