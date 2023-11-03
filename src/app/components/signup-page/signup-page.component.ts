@@ -57,7 +57,6 @@ export class SignupPageComponent implements OnInit {
   }
 
   onSubmit() {
-    debugger;
     if (this.signupForm.valid) {
       this.authService.registerWithEmailAndPassword(
         this.signupForm.value.email,

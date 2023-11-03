@@ -7,29 +7,70 @@
         class="avatar-img"
       />
     </button>
-    <div class="logo-text" *ngIf="collapsed">Stinger</div>
-    <button class="btn-collapse" *ngIf="collapsed" (click)="closeSideNav()">
+    <div class="logo-text" @fadeInOut *ngIf="collapsed">Stinger</div>
+    <button
+      class="btn-collapse"
+      @rotate
+      *ngIf="collapsed"
+      (click)="closeSideNav()"
+    >
       <fa-icon [icon]="closeIcon" class="collapse-icon"></fa-icon>
     </button>
   </div>
   <ul class="sidenav-nav">
     <li
       class="sidenav-nav-item"
-      *ngFor="let data of sideBarData; let last = last"
+      *ngFor="let data of sideBarData; let i = index"
     >
       <a
         class="sidenav-nav-link"
-        [routerLink]="[
-          '/dashboard',
-          { outlets: { secondary: [data.routerLink] } }
-        ]"
+        *ngIf="data.items && data.items.length > 0"
+        (click)="i === sideBarData.length ? logout() : handleClick(data)"
+        [ngClass]="getActiveClass(data)"
+      >
+        <fa-icon
+          *ngIf="data.icon"
+          [icon]="data.icon"
+          class="sidenav-link-icon"
+        ></fa-icon>
+        <span class="sidenav-link-text" @fadeInOut *ngIf="collapsed">
+          {{ data.label }}
+        </span>
+        <fa-icon
+          *ngIf="data.items && collapsed"
+          [icon]="data.expanded ? faChevronCircleDown : faChevronCircleRight"
+          class="menu-collapse-icon"
+        ></fa-icon>
+      </a>
+      <a
+        class="sidenav-nav-link"
+        *ngIf="!data.items || (data.items && data.items.length === 0)"
+        [routerLink]="getRouterLink(data)"
         routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }"
-        (click)="last ? logout() : null"
+        (click)="i === sideBarData.length - 1 ? logout() : null"
+        [ngClass]="{
+          'setting-absolute': i === sideBarData.length - 1,
+          'logout-absolute': i === sideBarData.length - 2
+        }"
       >
-        <fa-icon [icon]="data.icon" class="sidenav-link-icon"></fa-icon>
-        <div class="sidenav-link-text" *ngIf="collapsed">{{ data.label }}</div>
+        <fa-icon
+          *ngIf="data.icon"
+          [icon]="data.icon"
+          class="sidenav-link-icon"
+        ></fa-icon>
+        <span class="sidenav-link-text" @fadeInOut *ngIf="collapsed">
+          {{ data.label }}
+        </span>
       </a>
+      <div *ngIf="collapsed && data.items && data.items.length > 0">
+        <app-sub-level-menu
+          [data]="data"
+          [collapsed]="collapsed"
+          [multiple]="multiple"
+          [expanded]="data.expanded"
+        ></app-sub-level-menu>
+      </div>
     </li>
   </ul>
 </div>

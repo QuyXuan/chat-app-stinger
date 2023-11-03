@@ -1,0 +1,50 @@
+.line-clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: var(--line-clamp, 1);
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp.line-1 {
+    --line-clamp: 1;
+}
+
+.list-people {
+    gap: 10px;
+    padding-bottom: 20px;
+}
+
+.people-item {
+    background: red;
+    width: 12rem;
+    border: 1px solid #adb3b8;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.people-item .avatar-img img {
+    width: 12rem;
+    height: 12rem;
+    /* border-radius: 50%; */
+    object-fit: cover;
+    border: 3px solid #ffffff;
+}
+
+.people-item .desc {
+    background-color: #adb3b8;
+    padding: 10px 10px;
+}
+
+.people-item .desc .people-name {
+    font-weight: 500;
+    font-size: 1.2rem;
+    line-height: 1.75;
+    color: #000000;
+    margin-bottom: 0;
+    text-overflow: ellipsis;
+    white-space: now;
+}
+
+.list-btn {
+    gap: 5px;
+}

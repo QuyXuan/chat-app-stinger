@@ -1,4 +1,49 @@
-<p>
-  chat-page
-  works!aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-</p>
+<!-- main chat content -->
+<div class="main-chat-content">
+  <!-- chat info -->
+  <div class="chat-content">
+    <div class="header">
+      <div class="user-info">
+        <div class="avatar">
+          <img
+            src="https://media.istockphoto.com/vectors/default-profile-picture-avatar-photo-placeholder-vector-illustration-vector-id1223671392?k=6&m=1223671392&s=170667a&w=0&h=zP3l7WJinOFaGb2i1F4g8IS2ylw0FlIaa6x3tP9sebU="
+            alt="avatar"
+          />
+          <div class="status-circle">
+            <fa-icon [icon]="faIcon.faCircle"></fa-icon>
+          </div>
+        </div>
+        <div class="info">
+          <p class="user-name">Anil</p>
+          <p class="desx">Online - Last seen, 2:02pm</p>
+        </div>
+      </div>
+      <div class="list-btn">
+        <button class="btn-item">
+          <fa-icon [icon]="faIcon.faPhone"></fa-icon>
+        </button>
+        <button class="btn-item">
+          <fa-icon [icon]="faIcon.faVideo"></fa-icon>
+        </button>
+        <button class="btn-item">
+          <fa-icon [icon]="faIcon.faEllipsisVertical"></fa-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-message"></div>
+
+    <div class="chat-input">
+      <div class="input-info">
+        <fa-icon [icon]="faIcon.faPaperclip" class="input-icon"></fa-icon>
+        <input
+          type="text"
+          class="input-content"
+          placeholder="Type your message here"
+        />
+        <fa-icon [icon]="faIcon.faIcons" class="input-icon"></fa-icon>
+        <fa-icon [icon]="faIcon.faCamera" class="input-icon"></fa-icon>
+      </div>
+    </div>
+  </div>
+</div>

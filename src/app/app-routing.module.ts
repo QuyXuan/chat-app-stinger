@@ -5,6 +5,8 @@ import { SignupPageComponent } from './components/signup-page/signup-page.compon
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { authGuard } from './guards/auth.guard';
 import { ChatPageComponent } from './components/dashboard/body/chat-page/chat-page.component';
+import { NotificationPageComponent } from './components/dashboard/body/notification-page/notification-page.component';
+import { ChatSideComponent } from './components/dashboard/body/chat-page/chat-side/chat-side.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginPageComponent },
@@ -17,12 +19,35 @@ const routes: Routes = [
       {
         path: '',
         component: ChatPageComponent,
-        outlet: 'secondary',
+        outlet: 'body',
       },
       {
         path: 'chat',
         component: ChatPageComponent,
-        outlet: 'secondary',
+        outlet: 'body',
+      },
+      {
+        path: 'people',
+        loadChildren: () =>
+          import('./components/dashboard/body/people-page/people.module').then(
+            (m) => m.PeopleModule
+          ),
+        outlet: 'body',
+      },
+      {
+        path: '',
+        component: ChatSideComponent,
+        outlet: 'side-body',
+      },
+      {
+        path: 'chat-side',
+        component: ChatSideComponent,
+        outlet: 'side-body',
+      },
+      {
+        path: 'notification',
+        component: NotificationPageComponent,
+        outlet: 'side-body',
       },
     ],
   },

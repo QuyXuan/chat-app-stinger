@@ -11,20 +11,25 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { SideBarComponent } from './components/dashboard/side-bar/side-bar.component';
 import { ChatPageComponent } from './components/dashboard/body/chat-page/chat-page.component';
 import { BodyComponent } from './components/dashboard/body/body.component';
+import { SubLevelMenuComponent } from './components/dashboard/side-bar/sub-level-menu.component';
+import { NotificationPageComponent } from './components/dashboard/body/notification-page/notification-page.component';
 
 // Firebase config
 import { environment } from '../environments/environment';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideDatabase, getDatabase } from '@angular/fire/database';
 import { provideFirestore, getFirestore } from '@angular/fire/firestore';
+import { AngularFireModule } from '@angular/fire/compat';
+import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 
 // Module dependencies
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgToastModule } from 'ng-angular-popup';
-import { AngularFireModule } from '@angular/fire/compat';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ChatSideComponent } from './components/dashboard/body/chat-page/chat-side/chat-side.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +40,9 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
     SideBarComponent,
     ChatPageComponent,
     BodyComponent,
+    SubLevelMenuComponent,
+    NotificationPageComponent,
+    ChatSideComponent,
   ],
   imports: [
     BrowserModule,
@@ -44,11 +52,13 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
     provideFirestore(() => getFirestore()),
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
+    AngularFireStorageModule,
     FormsModule,
     ReactiveFormsModule,
     NgToastModule,
     NgbModule,
     FontAwesomeModule,
+    BrowserAnimationsModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
