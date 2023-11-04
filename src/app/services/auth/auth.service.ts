@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { NgToastService } from 'ng-angular-popup';
 import { Subject } from 'rxjs';
 import { constants } from 'src/app/constants';
-
+import * as jwt from 'jsonwebtoken';
 @Injectable({
   providedIn: 'root',
 })
@@ -41,7 +41,7 @@ export class AuthService {
       .createUserWithEmailAndPassword(email, password)
       .then((res) => {
         this.authState = res;
-        this.saveAccessToken(JSON.stringify(this.authState));
+        this.saveToken(this.createToken(this.authState));
         this.fireAuth.currentUser.then((user) => {
           user
             ?.updateProfile({
@@ -63,7 +63,7 @@ export class AuthService {
       .signInWithEmailAndPassword(email, password)
       .then((res) => {
         this.authState = res.user;
-        this.saveAccessToken(JSON.stringify(this.authState));
+        this.saveToken(this.createToken(this.authState));
         this.setUserStatus(constants.STATUS_ONLINE);
         this.router.navigate(['dashboard']);
       })
@@ -105,47 +105,61 @@ export class AuthService {
     this.router.navigate(['dashboard']);
   }
 
-  saveAccessToken(accessToken: string) {
-    localStorage.setItem('access_token', accessToken);
-
+  createToken(data: any): string {
+    const secretKey: string = constants.SECRET_KEY;
+    const payLoad = {
+      uid: data.uid,
+      email: data.email,
+      displayName: data.displayName
+    };
+    const options: jwt.SignOptions = {
+      expiresIn: '24h', // Thời gian hết hạn của token
+    };
+    const accessToken: string = jwt.sign(payLoad, secretKey, options);
+    return JSON.stringify(payLoad);
   }
 
-  getAccessToken() {
-    return localStorage.getItem('access_token');
+  saveToken(accessToken: string) {
+    // Mã hoá access token dưới dạng Base64 trước khi lưu vào cookie
+    this.setCookie('access-token', btoa(accessToken));
   }
 
-  getRefreshToken() {
-    return localStorage.getItem('refresh_token');
+  clearToken(): void {
+    this.deleteCookie('access-token');
   }
 
-  createToken(data: any) {
-    return '';
+  setCookie(key: string, value: string, hours: number = 24): void {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + hours * 60 * 60 * 1000);
+    document.cookie = `${key} = ${value};expires=${expires.toUTCString()}`;
   }
 
-  getCookie(keyCookie: string): string | undefined {
-    const cookies = document.cookie.split(";");
+  getCookie(keyCookie: string): string | null {
+    const cookies = document.cookie.split(';');
     for (const cookie of cookies) {
       const [cookieKey, cookieValue] = cookie.trim().split('=');
       if (cookieKey === keyCookie) {
-        return decodeURIComponent(cookieValue);
+        return cookieValue;
       }
     }
-    return undefined;
+    return null;
   }
 
-  setCookie(name: string, value: string, hours: number = 24): void {
-    const expires = new Date();
-    expires.setTime(expires.getTime() + hours * 60 * 60 * 1000);
-    document.cookie = name + "=" + value + ";expires=" + expires.toUTCString();
+  /**
+   * Author: TaiPV - create 2023/11/04  
+   * Delete the cookie by its name by setting the expiration time at a time in the past
+   */
+  deleteCookie(name: string): void {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
   }
 
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('access_token');
+    return !!this.getCookie('access-token');
   }
 
   logout() {
     this.fireAuth.signOut();
-    localStorage.clear();
+    this.clearToken();
     this.router.navigate(['login']);
   }
 }
