@@ -13,6 +13,8 @@ import { SideBarComponent } from './components/dashboard/side-bar/side-bar.compo
 import { ChatPageComponent } from './components/dashboard/body/chat-page/chat-page.component';
 import { BodyComponent } from './components/dashboard/body/body.component';
 import { SubLevelMenuComponent } from './components/dashboard/side-bar/sub-level-menu.component';
+import { SettingsPageComponent } from './components/dashboard/body/settings-page/settings-page.component';
+import { SettingsItemComponent } from './components/dashboard/body/settings-page/settings-item/settings-item.component';
 import { NotificationPageComponent } from './components/dashboard/body/notification-page/notification-page.component';
 
 // Firebase config
@@ -44,6 +46,8 @@ import { DatePipe } from '@angular/common';
     ChatPageComponent,
     BodyComponent,
     SubLevelMenuComponent,
+    SettingsPageComponent,
+    SettingsItemComponent,
     NotificationPageComponent,
     DateDisplayPipe,
     PageNotFoundComponent,

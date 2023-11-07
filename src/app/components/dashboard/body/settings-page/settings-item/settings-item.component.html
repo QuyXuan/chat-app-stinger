@@ -1,0 +1,9 @@
+<div class="child-item">
+    <div class="child-item__left">
+        <h3 class="child-item__title">{{ data.title }}</h3>
+        <p class="child-item__content">{{ data.content }}</p>
+    </div>
+    <div class="child-item__right">
+        <a class="btn-choose-item" href="javascript:void(0)" (click)="selectItem()" [innerHTML]="safeIcon"></a>
+    </div>
+</div>

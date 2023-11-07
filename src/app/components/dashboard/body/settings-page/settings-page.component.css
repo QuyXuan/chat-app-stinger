@@ -1,0 +1,114 @@
+.main-settings-content {
+    background-color: #f4f7fa;
+    font-size: 1.6rem;
+    font-family: 'Poppins', sans-serif;
+    height: 81vh;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.heading-item {
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px 20px;
+    border-radius: 0.625rem;
+    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.2);
+    margin-bottom: 7px;
+}
+
+.heading-item {
+    padding: 10px 20px;
+}
+
+.heading-item__label {
+    font-size: calc(15px + 0.00125 * (100vw - 320px));
+    font-weight: 600;
+    color: #223645;
+}
+
+.heading-item__content {
+    font-size: calc(14px + 0.00125 * (100vw - 320px));
+    font-weight: 400;
+    color: #647589;
+}
+
+.heading-item__title {
+    font-size: calc(20px + 0.005 * (100vw - 320px));
+    font-weight: 800;
+    color: #223645;
+}
+
+.btn-choose-back {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #575f66;
+    border: 1px solid #575f66;
+    background: transparent;
+    transition: 0.5s;
+}
+
+.btn-choose-back:hover {
+    color: #fff;
+    background: #ff4e2b;
+    border: 1px solid #ff4e2b;
+    cursor: pointer;
+}
+
+.btn-animation {
+    font-size: 1.1rem;
+    font-family: 'Poppins', sans-serif;
+    width: 4.71rem;
+    height: 2.35rem;
+    box-shadow: 0rem 0.12rem 0.16rem 0 rgba(68, 102, 255, 0.5);
+    border-radius: 0.2rem;
+    margin-top: 0.75rem;
+    background: linear-gradient(90deg, #0d6efd 0%, #3e89fa 100%);
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    text-decoration: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    border: none;
+
+}
+
+.btn-animation::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    width: 11.2rem;
+    height: 11.2rem;
+    border-radius: 50%;
+    margin-left: -5.6rem;
+    margin-top: -5.6rem;
+    animation: spread 1.5s infinite both;
+}
+
+@keyframes spread {
+    0% {
+        -o-transform: scale(0);
+        transform: scale(0);
+        -webkit-transform: scale(0);
+        -moz-transform: scale(0);
+        transform: scale(0);
+    }
+
+    100% {
+        -o-transform: scale(2);
+        transform: scale(2);
+        -webkit-transform: scale(2);
+        -moz-transform: scale(2);
+        transform: scale(2);
+    }
+}
