@@ -11,8 +11,6 @@ import { SignupPageComponent } from './components/signup-page/signup-page.compon
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { ChatPageComponent } from './components/dashboard/body/chat-page/chat-page.component';
-import { NotificationPageComponent } from './components/dashboard/body/notification-page/notification-page.component';
-import { ChatSideComponent } from './components/dashboard/body/chat-page/chat-side/chat-side.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginPageComponent, canActivate: [loginAuth] },
@@ -39,21 +37,6 @@ const routes: Routes = [
             (m) => m.PeopleModule
           ),
         outlet: 'body',
-      },
-      {
-        path: '',
-        component: ChatSideComponent,
-        outlet: 'side-body',
-      },
-      {
-        path: 'chat-side',
-        component: ChatSideComponent,
-        outlet: 'side-body',
-      },
-      {
-        path: 'notification',
-        component: NotificationPageComponent,
-        outlet: 'side-body',
       },
     ],
   },

@@ -15,24 +15,18 @@ export class PendingFriendsPageComponent implements OnInit {
     private peopleService: PeopleService,
     private toastService: NgToastService
   ) {}
-
   ngOnInit(): void {
-    this.peopleService.getAllUsers().subscribe(() => {
-      this.peopleService.getMyRequests().subscribe((requests) => {
-        this.allRequests = this.peopleService.getUsers(
-          requests.map((request: any) => request.receiver)
-        );
-      });
+    this.peopleService.pendingFriendsOfUser.subscribe((users) => {
+      this.allRequests = users;
     });
   }
 
   acceptRequest(email: string) {
-    this.peopleService.acceptMyRequest(email).then(() => {
-      this.toastService.success({
-        detail: 'SUCCESS',
-        summary: 'Friend request accepted',
-        duration: 5000,
-      });
+    this.peopleService.acceptRequest(email);
+    this.toastService.success({
+      detail: 'SUCCESS',
+      summary: 'Friend request accepted',
+      duration: 5000,
     });
   }
 

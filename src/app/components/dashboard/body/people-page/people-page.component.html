@@ -1,30 +1,33 @@
 <div class="container">
+  <div class="search-box">
+    <fa-icon [icon]="faIcon.faMagnifyingGlass"></fa-icon>
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search friends"
+      [formControl]="searchControl"
+    />
+  </div>
   <div class="list-people d-flex justify-content-start flex-wrap">
     <div
-      *ngFor="let personData of allFriendsOfUser; let i = index"
+      *ngFor="let friend of myFriends | async; let i = index"
       class="people-item"
     >
       <div class="avatar-img">
-        <img [src]="personData.photoURL" alt="avatar" />
+        <img [src]="friend.photoURL" alt="avatar" />
       </div>
       <div class="desc">
-        <p class="people-name .text-nowrap line-clamp line1">
-          {{ personData.displayName }}
+        <p class="people-name text-nowrap line-clamp line1">
+          {{ friend.displayName }}
         </p>
         <div class="list-btn d-flex flex-column">
-          <!-- <button type="button" class="accept-btn btn btn-primary">
-            Accept
-          </button>
-          <button type="button" class="delete-btn btn btn-secondary">
-            Delete
-          </button> -->
-          <!-- <button
+          <button
             type="button"
-            class="add-btn btn btn-info"
-            (click)="addFriend(personData.email)"
+            class="accept-btn btn btn-primary"
+            (click)="createChat(friend)"
           >
-            Add friend
-          </button> -->
+            Chat
+          </button>
         </div>
       </div>
     </div>

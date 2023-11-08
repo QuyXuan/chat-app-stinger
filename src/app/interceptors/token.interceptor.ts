@@ -44,10 +44,11 @@ export class TokenInterceptor implements HttpInterceptor {
   }
 
   handleUnAuthorizedError(req: HttpRequest<any>, next: HttpHandler) {
-    const token = this.authService.createToken({
-      accessToken: this.authService.getAccessToken(),
-      refreshToken: this.authService.getRefreshToken(),
-    });
+    // const token = this.authService.createToken({
+    //   accessToken: this.authService.getAccessToken(),
+    //   refreshToken: this.authService.getRefreshToken(),
+    // });
+    const token = '';
     const tokenExpiration = JSON.parse(atob(token.split('.')[1])).exp * 1000;
     if (Date.now() < tokenExpiration) {
       req = req.clone({

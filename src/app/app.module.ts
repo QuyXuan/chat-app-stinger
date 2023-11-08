@@ -23,6 +23,7 @@ import { provideFirestore, getFirestore } from '@angular/fire/firestore';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { AngularFireStorageModule } from '@angular/fire/compat/storage';
+import { getAuth, provideAuth } from '@angular/fire/auth';
 
 // Module dependencies
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -30,7 +31,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgToastModule } from 'ng-angular-popup';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ChatSideComponent } from './components/dashboard/body/chat-page/chat-side/chat-side.component';
+import { DateDisplayPipe } from './pipes/date-display/date-display.pipe';
+import { DatePipe } from '@angular/common';
 
 @NgModule({
   declarations: [
@@ -43,11 +45,12 @@ import { ChatSideComponent } from './components/dashboard/body/chat-page/chat-si
     BodyComponent,
     SubLevelMenuComponent,
     NotificationPageComponent,
-    ChatSideComponent,
-    PageNotFoundComponent
+    DateDisplayPipe,
+    PageNotFoundComponent,
   ],
   imports: [
     provideFirebaseApp(() => initializeApp(environment.firebase)),
+    provideAuth(() => getAuth()),
     provideDatabase(() => getDatabase()),
     provideFirestore(() => getFirestore()),
     BrowserModule,
@@ -62,7 +65,7 @@ import { ChatSideComponent } from './components/dashboard/body/chat-page/chat-si
     FontAwesomeModule,
     BrowserAnimationsModule,
   ],
-  providers: [],
+  providers: [DatePipe],
   bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

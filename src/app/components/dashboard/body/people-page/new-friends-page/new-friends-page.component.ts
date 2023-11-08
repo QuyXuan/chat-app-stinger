@@ -10,16 +10,11 @@ import { PeopleService } from 'src/app/services/people/people.service';
 })
 export class NewFriendsPageComponent implements OnInit {
   allNewFriendsOfUser: any;
-
   ngOnInit(): void {
-    this.peopleService.getAllUsers().subscribe(() => {
-      debugger;
-      this.peopleService.getNewFriendsOfUser().then((users) => {
-        this.allNewFriendsOfUser = users;
-      });
+    this.peopleService.newFriendsOfUser.subscribe((users) => {
+      this.allNewFriendsOfUser = users;
     });
   }
-
   constructor(
     private peopleService: PeopleService,
     private toastService: NgToastService
@@ -28,7 +23,7 @@ export class NewFriendsPageComponent implements OnInit {
   addFriend(receiver: string) {
     this.peopleService.sendFriendRequest(receiver).then(() => {
       this.toastService.success({
-        detail: 'ERROR',
+        detail: 'SUCCESS',
         summary: 'Friend request sent',
         duration: 5000,
       });

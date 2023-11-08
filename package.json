@@ -1,12 +1,16 @@
 {
   "name": "chatappstinger",
   "version": "0.0.0",
+  "main": "main.js",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "start:electron": "ng build --base-href ./ && electron .",
+    "electron": "electron .",
+    "watch:electron": "nodemon --exec electron ."
   },
   "private": true,
   "dependencies": {
@@ -27,6 +31,7 @@
     "@ng-bootstrap/ng-bootstrap": "^15.1.1",
     "@popperjs/core": "^2.11.6",
     "bootstrap": "^5.2.3",
+    "electron": "^27.0.3",
     "ng-angular-popup": "^0.4.7",
     "rxfire": "^6.0.3",
     "rxjs": "~7.8.0",

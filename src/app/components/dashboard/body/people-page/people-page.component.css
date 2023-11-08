@@ -1,12 +1,26 @@
-.line-clamp {
-    display: -webkit-box;
-    -webkit-line-clamp: var(--line-clamp, 1);
-    -webkit-box-orient: vertical;
+.search-box {
+    display: flex;
+    align-items: center;
+    border-radius: 20px;
+    background-color: #ffffff;
     overflow: hidden;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.2);
+    height: 8%;
 }
 
-.line-clamp.line-1 {
-    --line-clamp: 1;
+.search-box:hover, .search-box:focus-within {
+    box-shadow: 5px 5px 10px 5px rgba(0, 0, 0, 0.5);
+}
+
+.search-input {
+    width: 110%;
+    border: none;
+    outline: none;
+    font-size: 20px;
+    font-weight: 500;
+    margin-left: 10px;
 }
 
 .list-people {
@@ -25,7 +39,6 @@
 .people-item .avatar-img img {
     width: 12rem;
     height: 12rem;
-    /* border-radius: 50%; */
     object-fit: cover;
     border: 3px solid #ffffff;
 }
@@ -42,7 +55,6 @@
     color: #000000;
     margin-bottom: 0;
     text-overflow: ellipsis;
-    white-space: now;
 }
 
 .list-btn {

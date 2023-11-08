@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { faEye } from '@fortawesome/free-regular-svg-icons';
 import {
   faEnvelope,
@@ -7,8 +8,11 @@ import {
   faLock,
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
+import { NgToastService } from 'ng-angular-popup';
+import { switchMap } from 'rxjs';
 import { constants } from 'src/app/constants';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
   selector: 'app-signup-page',
@@ -47,7 +51,10 @@ export class SignupPageComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private formBuilder: FormBuilder
+    private userService: UserService,
+    private formBuilder: FormBuilder,
+    private toastService: NgToastService,
+    private router: Router
   ) {}
 
   passToggle() {
@@ -58,11 +65,27 @@ export class SignupPageComponent implements OnInit {
 
   onSubmit() {
     if (this.signupForm.valid) {
-      this.authService.registerWithEmailAndPassword(
-        this.signupForm.value.email,
-        this.signupForm.value.password,
-        this.signupForm.value.username
-      );
+      const { email, password, username } = this.signupForm.value;
+      this.authService
+        .signUp(email, password)
+        .pipe(
+          switchMap(({ user: { uid } }) =>
+            this.userService.addUser({
+              uid,
+              email,
+              displayName: username,
+              photoURL: constants.DEFAULT_AVATAR_URL,
+            })
+          )
+        )
+        .subscribe(() => {
+          this.router.navigate(['/dashboard']);
+          this.toastService.success({
+            detail: 'SUCCESS',
+            summary: 'Signup successfully',
+            duration: 3000,
+          });
+        });
     }
   }
 }
