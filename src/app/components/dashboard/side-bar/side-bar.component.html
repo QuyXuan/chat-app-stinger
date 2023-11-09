@@ -20,13 +20,17 @@
   <ul class="sidenav-nav">
     <li
       class="sidenav-nav-item"
-      *ngFor="let data of sideBarData; let i = index"
+      *ngFor="let data of sideBarData; index as index"
     >
       <a
         class="sidenav-nav-link"
         *ngIf="data.items && data.items.length > 0"
-        (click)="i === sideBarData.length ? logout() : handleClick(data)"
-        [ngClass]="getActiveClass(data)"
+        (click)="index === sideBarData.length ? logout() : handleClick(data)"
+        [ngClass] = "getActiveClass(data)"
+        [ngClass] = "{
+          'is-closed-side-bar': !collapsed, 
+          'active': index == selectedNavLinkId
+        }"
       >
         <fa-icon
           *ngIf="data.icon"
@@ -45,13 +49,13 @@
       <a
         class="sidenav-nav-link"
         *ngIf="!data.items || (data.items && data.items.length === 0)"
-        [routerLink]="getRouterLink(data)"
-        routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: true }"
-        (click)="i === sideBarData.length - 1 ? logout() : null"
+        (click)="index === sideBarData.length - 1 ? logout() : handleClickNavLink(index)"
+        [routerLink]="index === sideBarData.length - 1 ? '': ['/dashboard', { outlets: { 'body': 'chat' } }]"
         [ngClass]="{
-          'setting-absolute': i === sideBarData.length - 1,
-          'logout-absolute': i === sideBarData.length - 2
+          'is-closed-side-bar': !collapsed,
+          'setting-absolute': index === sideBarData.length - 1,
+          'logout-absolute': index === sideBarData.length - 2,
+          'active': index == selectedNavLinkId
         }"
       >
         <fa-icon
