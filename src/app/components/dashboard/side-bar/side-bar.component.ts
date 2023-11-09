@@ -22,6 +22,8 @@ import {
   trigger,
 } from '@angular/animations';
 import { Router } from '@angular/router';
+import { DataTransferService } from 'src/app/services/data-transfer/data.service';
+import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 
 interface SideNavToggle {
   screenWidth: number;
@@ -48,7 +50,13 @@ interface SideNavToggle {
   ],
 })
 export class SideBarComponent implements OnInit {
+  selectedNavLinkId!: number;
+
   @Output() onToggleSideNav: EventEmitter<SideNavToggle> = new EventEmitter();
+
+  // Gửi tên component được click trên sideBar đến dashboard
+  @Output() onClickNavLink = new EventEmitter<string>();
+
   screenWidth = 0;
   collapsed = false;
   closeIcon = faTimes;
@@ -71,11 +79,16 @@ export class SideBarComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private toastService: NgToastService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private dataTransferService: DataTransferService
+  ) { }
   ngOnInit(): void {
     this.screenWidth = window.innerWidth;
     this.toggleCollapse();
+
+    this.dataTransferService.selectedNavLink.subscribe((data: SelectedItem) => {
+      this.selectedNavLinkId = data.id;
+    });
   }
 
   getRouterLink(data: ISidebarData) {
@@ -102,6 +115,7 @@ export class SideBarComponent implements OnInit {
   }
 
   handleClick(item: ISidebarData) {
+    this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(0, ''));
     if (!this.multiple) {
       for (let modelItem of this.sideBarData) {
         if (item !== modelItem && modelItem.expanded) {
@@ -123,5 +137,10 @@ export class SideBarComponent implements OnInit {
       summary: 'Logout successfully',
       duration: 3000,
     });
+  }
+
+  handleClickNavLink(navLinkIndex: number): void {
+    this.selectedNavLinkId = navLinkIndex;
+    this.onClickNavLink.emit(this.sideBarData[navLinkIndex].label);
   }
 }

@@ -108,7 +108,8 @@
     margin-left: 1.5rem;
 }
 
-.sidenav-nav .sidenav-nav-item .sidenav-nav-link:hover, .sidenav-nav .sidenav-nav-item .sidenav-nav-link.active .menu-collapse-icon {
+.sidenav-nav .sidenav-nav-item .sidenav-nav-link:hover,
+.sidenav-nav .sidenav-nav-item .sidenav-nav-link.active .menu-collapse-icon {
     background-color: #ffffff;
     color: #000000;
 }
@@ -121,7 +122,13 @@
     background-color: #ffffff;
 }
 
-.active .sidenav-link-icon, .active .sidenav-link-text, .active .sidenav-link-text {
+.is-closed-side-bar,
+.is-closed-side-bar:hover {
+    border-radius: 50% !important;
+}
+
+.active .sidenav-link-icon,
+.active .sidenav-link-text {
     color: #000000;
 }
 

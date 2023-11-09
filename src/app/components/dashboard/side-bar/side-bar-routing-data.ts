@@ -37,8 +37,8 @@ export const sideBarRoutingData: ISidebarData[] = [
   {
     label: 'Notifications',
     icon: faBell,
-    routerLink: 'notification',
-    outlet: 'side-body',
+    routerLink: 'chat',
+    outlet: 'body',
   },
   {
     label: 'Settings',

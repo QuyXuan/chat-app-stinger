@@ -1,7 +1,10 @@
 <div class="body" [ngClass]="getBodyClass()">
-  <!-- <div class="notification-container">
+
+  <div class="side-body" [ngClass]="{
+    'visible': selectedNavLink =='Notifications'
+  }">
     <app-notification-page></app-notification-page>
-  </div> -->
+  </div>
   <div class="body-container">
     <router-outlet name="body"></router-outlet>
   </div>

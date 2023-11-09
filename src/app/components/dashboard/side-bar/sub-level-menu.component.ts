@@ -13,6 +13,8 @@ import {
   trigger,
 } from '@angular/animations';
 import { Router } from '@angular/router';
+import { DataTransferService } from 'src/app/services/data-transfer/data.service';
+import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 
 @Component({
   selector: 'app-sub-level-menu',
@@ -64,6 +66,7 @@ import { Router } from '@angular/router';
           ]"
           routerLinkActive="active-sublevel"
           [routerLinkActiveOptions]="{ exact: true }"
+          (click) = "handleClick(item)"
         >
           <fa-icon [icon]="faCircle" class="sublevel-link-icon"></fa-icon>
           <span *ngIf="collapsed" @fadeInOut class="sublevel-link-text">
@@ -122,9 +125,10 @@ export class SubLevelMenuComponent {
   @Input() expanded: boolean | undefined;
   @Input() multiple: boolean = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private dataTransferService: DataTransferService) {}
 
   handleClick(item: any) {
+    this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(0, ''));
     if (!this.multiple) {
       if (this.data.items && this.data.items.length > 0) {
         for (let modelItem of this.data.items) {

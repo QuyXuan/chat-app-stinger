@@ -1,0 +1,83 @@
+.title-sticky {
+    position: sticky;
+    top: 0;
+}
+
+.title-block {
+    position: relative;
+    border-radius: 10px;
+    background: white;
+    padding: 10px 10px 10px;
+    margin-bottom: 15px;
+    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+.title-block .title {
+    font-size: calc(20px + .005*(100vw - 320px));
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.title-block p {
+    font-size: 16px;
+    color: #647589;
+    margin-bottom: 0;
+}
+
+.btn-close {
+    position: absolute;
+    right: 10px;
+    top: 15px;
+}
+
+.sender-avatar {
+    width: 50px;
+    border: 1px solid black;
+    border-radius: 10px;
+}
+
+/* ========== Notification list ============  */
+.notification-list {
+    padding: 0 20px;
+    max-height: calc(100vh - 160px);
+    overflow: auto;
+}
+
+.notification-list .notification {
+    display: flex;
+    gap: 15px;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.notification .notification-detail {
+    flex-grow: 1;
+}
+
+.notification p {
+    margin: 0;
+}
+
+.notification-detail .time {
+    position: absolute;
+    right: 0;
+    color: #647589;
+    font-size: 12px;
+}
+
+.notification-detail .icon {
+    color: #647589;
+    margin-right: 5px;
+}
+
+.notification-detail .room-name {
+    max-width: 80%;
+}
+
+.notification-detail .content,
+.notification-detail .room-name {
+    display: -webkit-box;
+    -webkit-line-clamp: var(--line-clamp, 1);
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

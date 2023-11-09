@@ -1,5 +1,4 @@
-<app-side-bar (onToggleSideNav)="onToggleSideNav($event)"></app-side-bar>
-<app-body
-  [collapsed]="isSideNavCollapsed"
-  [screenWidth]="screenWidth"
-></app-body>
+<app-side-bar (onToggleSideNav)="onToggleSideNav($event)" (onClickNavLink)="onClickNavLink($event)">
+</app-side-bar>
+<app-body [collapsed]="isSideNavCollapsed" [screenWidth]="screenWidth" [selectedNavLink]="selectedNavLink">
+</app-body>

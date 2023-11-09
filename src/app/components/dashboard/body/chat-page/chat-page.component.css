@@ -290,7 +290,7 @@
     overflow: hidden;
     padding: 10px 20px;
     margin: 0 10px;
-    box-shadow: rgba(0, 0, 0, 0.2) 2px 2px 2px 2px;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 2px 2px;
     height: 50%;
     background: #f4f4f4;
 }

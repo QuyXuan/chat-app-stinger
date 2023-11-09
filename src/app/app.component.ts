@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { AuthService } from './services/auth/auth.service';
 import { Router } from '@angular/router';
 import { NgToastService } from 'ng-angular-popup';
@@ -14,7 +14,7 @@ export class AppComponent {
   constructor(
     private authService: AuthService,
     private router: Router,
-    private toastService: NgToastService
+    private toastService: NgToastService,
   ) {
     this.authService.isNotLoggedInSubject.subscribe((res) => {
       this.toastService.error({
@@ -22,6 +22,20 @@ export class AppComponent {
         summary: 'You must login first',
         duration: 5000,
       });
+    });
+  }
+
+  /**
+   * Khi người dùng bị mất kết nối thì toast này sẽ được hiển thị
+   * @param event 
+   */
+  @HostListener('window:offline', ['$event'])
+  onOffline(event: Event): void {
+    this.toastService.error({
+      detail: 'Disconnect',
+      summary: 'You are offline',
+      position: 'bottomLeft',
+      sticky: true
     });
   }
 }
