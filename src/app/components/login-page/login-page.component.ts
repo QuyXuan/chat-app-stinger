@@ -8,6 +8,8 @@ import {
   faEnvelope,
   faLock,
 } from '@fortawesome/free-solid-svg-icons';
+import { Router } from '@angular/router';
+import { NgToastService } from 'ng-angular-popup';
 
 @Component({
   selector: 'app-login-page',
@@ -38,8 +40,10 @@ export class LoginPageComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private formBuilder: FormBuilder
-  ) { }
+    private formBuilder: FormBuilder,
+    private router: Router,
+    private toastService: NgToastService
+  ) {}
 
   passToggle() {
     this.isText = !this.isText;
@@ -49,10 +53,15 @@ export class LoginPageComponent implements OnInit {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      this.authService.signInWithEmailAndPassword(
-        this.loginForm.value.email,
-        this.loginForm.value.password
-      );
+      const { email, password } = this.loginForm.value;
+      this.authService.login(email, password).subscribe(() => {
+        this.router.navigate(['/dashboard']);
+        this.toastService.success({
+          detail: 'SUCCESS',
+          summary: 'Login successfully',
+          duration: 3000,
+        });
+      });
     }
   }
 }

@@ -1,129 +1,68 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Router } from '@angular/router';
-import { NgToastService } from 'ng-angular-popup';
-import { Subject } from 'rxjs';
-import { constants } from 'src/app/constants';
+import {
+  Auth,
+  authState,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+  UserInfo,
+} from '@angular/fire/auth';
+import { concatMap, from, Observable, of, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private authState: any;
+  currentUser = authState(this.auth);
   public isNotLoggedInSubject = new Subject<boolean>();
 
-  constructor(
-    private fireAuth: AngularFireAuth,
-    private router: Router,
-    private fireStore: AngularFirestore,
-    private toastService: NgToastService
-  ) {
-    this.fireAuth.authState.subscribe((authState) => {
-      this.authState = authState;
+  constructor(private auth: Auth) {}
+
+  login(email: string, password: string) {
+    const userCredential = from(
+      signInWithEmailAndPassword(this.auth, email, password)
+    );
+    userCredential.subscribe((user) => {
+      this.saveAccessToken(JSON.stringify(user));
     });
+    return userCredential;
   }
 
-  get currentUserId(): string {
-    return this.authState ? this.authState.uid : '';
+  signUp(email: string, password: string) {
+    const userCredential = from(
+      createUserWithEmailAndPassword(this.auth, email, password)
+    );
+    userCredential.subscribe((user) => {
+      this.saveAccessToken(JSON.stringify(user));
+    });
+    return userCredential;
   }
 
-  authUser(): boolean {
-    return this.authState !== null && this.authState !== undefined;
-  }
-
-  registerWithEmailAndPassword(
-    email: string,
-    password: string,
-    username: string
-  ) {
-    this.fireAuth
-      .createUserWithEmailAndPassword(email, password)
-      .then((res) => {
-        this.authState = res;
-        this.saveAccessToken(JSON.stringify(this.authState));
-        this.fireAuth.currentUser.then((user) => {
-          user
-            ?.updateProfile({
-              displayName: username,
-              photoURL: constants.DEFAULT_AVATAR_URL,
-            })
-            .then(() => {
-              this.setUserData(email, username, user.photoURL!);
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        });
-      });
-  }
-
-  signInWithEmailAndPassword(email: string, password: string) {
-    this.fireAuth
-      .signInWithEmailAndPassword(email, password)
-      .then((res) => {
-        this.authState = res.user;
-        this.saveAccessToken(JSON.stringify(this.authState));
-        this.setUserStatus(constants.STATUS_ONLINE);
-        this.router.navigate(['dashboard']);
+  updateProfileData(profileData: Partial<UserInfo>): Observable<any> {
+    const user = this.auth.currentUser;
+    return of(user).pipe(
+      concatMap((user) => {
+        if (!user) throw new Error('Not Authenticated');
+        return updateProfile(user, profileData);
       })
-      .catch((err) => {
-        if (
-          err.code === 'auth/invalid-login-credentials' ||
-          err.code === 'auth/wrong-password'
-        ) {
-          this.toastService.error({
-            detail: 'ERROR',
-            summary: 'Wrong email or password!',
-            duration: 5000,
-          });
-        }
-      });
+    );
   }
 
-  setUserStatus(status: string) {
-    const statusDoc = this.fireStore.doc(`status/${this.currentUserId}`);
-    statusDoc.update({ status: status }).catch((err) => {
-      console.log(err);
-    });
-  }
-
-  setUserData(email: string, displayName: string, photoURL: string) {
-    const userPath = `users/${this.currentUserId}`;
-    const statusPath = `status/${this.currentUserId}`;
-    const userDoc = this.fireStore.doc(userPath);
-    const statusDoc = this.fireStore.doc(statusPath);
-    userDoc.set({
-      email: email,
-      displayName: displayName,
-      photoURL: photoURL,
-    });
-    statusDoc.set({
-      email: email,
-      status: constants.STATUS_ONLINE,
-    });
-    this.router.navigate(['dashboard']);
+  logout() {
+    localStorage.clear();
+    return from(this.auth.signOut());
   }
 
   saveAccessToken(accessToken: string) {
     localStorage.setItem('access_token', accessToken);
-
   }
 
   getAccessToken() {
     return localStorage.getItem('access_token');
   }
 
-  getRefreshToken() {
-    return localStorage.getItem('refresh_token');
-  }
-
-  createToken(data: any) {
-    return '';
-  }
-
   getCookie(keyCookie: string): string | undefined {
-    const cookies = document.cookie.split(";");
+    const cookies = document.cookie.split(';');
     for (const cookie of cookies) {
       const [cookieKey, cookieValue] = cookie.trim().split('=');
       if (cookieKey === keyCookie) {
@@ -136,16 +75,10 @@ export class AuthService {
   setCookie(name: string, value: string, hours: number = 24): void {
     const expires = new Date();
     expires.setTime(expires.getTime() + hours * 60 * 60 * 1000);
-    document.cookie = name + "=" + value + ";expires=" + expires.toUTCString();
+    document.cookie = name + '=' + value + ';expires=' + expires.toUTCString();
   }
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem('access_token');
-  }
-
-  logout() {
-    this.fireAuth.signOut();
-    localStorage.clear();
-    this.router.navigate(['login']);
   }
 }

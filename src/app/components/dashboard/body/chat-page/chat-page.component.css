@@ -1,15 +1,152 @@
+/* chat info */
+.chat-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 20px;
+    scroll-behavior: smooth;
+    width: 35%;
+}
+
+.chat-info .search-box {
+    display: flex;
+    align-items: center;
+    border-radius: 20px;
+    background-color: #ffffff;
+    overflow: hidden;
+    padding: 10px 20px;
+    box-shadow: 2px 2px 2px 2px rgba(0, 0, 0, 0.2);
+    height: 8%;
+}
+
+.chat-info .search-box:hover, .chat-info .search-box:focus-within {
+    box-shadow: 5px 5px 10px 5px rgba(0, 0, 0, 0.5);
+}
+
+.chat-info .search-input {
+    width: 110%;
+    border: none;
+    outline: none;
+    font-size: 20px;
+    font-weight: 500;
+    margin-left: 10px;
+}
+
+.chat-main {
+    display: flex;
+    flex-direction: column;
+    margin-right: -20px;
+    padding-right: 40px;
+    height: 82vh;
+    overflow-y: auto;
+}
+
+.chat-main .info-item {
+    position: relative;
+    margin-left: -30px;
+    margin-right: -40px;
+    padding: 10px 20px;
+    transition: all .3s ease;
+}
+
+.chat-main .info-item:hover::before,
+.chat-main .info-item:focus-within::before,
+.chat-main .info-item.active::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 4px;
+    background-color: #1c9dea;
+    transition: all .3s ease;
+}
+
+.chat-main .info-item.active {
+    background-color: #eff7fe;
+}
+
+.chat-main .info-item .chat-box {
+    position: relative;
+}
+
+.chat-main .info-item .chat-box .profile {
+    position: absolute;
+    left: 0;
+}
+
+.chat-main .info-item .chat-box .details {
+    padding: 12px 50px 13px 75px;
+}
+
+.profile img {
+    width: 60px;
+    height: 60px;
+    display: inline-block;
+    border-radius: 20px;
+    position: relative;
+}
+
+.details .user-name {
+    font-weight: 500;
+    width: 10em;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: #10375c;
+    margin-bottom: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.date-status .date, .details .content {
+    font-size: 1rem;
+    width: 10em;
+    line-height: 1.86;
+    color: #a9b3bb;
+    white-space: nowrap;
+    margin-bottom: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.details h6 {
+    padding-top: 8px;
+    max-width: 170px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.chat-main .info-item .chat-box .date-status {
+    position: absolute;
+    right: 0;
+    top: 10px;
+    text-align: right;
+}
+
+.group-box .date-status .sm {
+    font-weight: 600;
+    border-radius: 100%;
+    height: 20px;
+    width: 20px;
+    padding: 0 6px;
+    font-size: 12px;
+    margin-top: 6px
+}
+
 /* chat content */
 
 .main-chat-content {
     display: flex;
-    gap: 6%;
+    gap: 3%;
     height: 105%;
 }
 
 .chat-content {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: 90%;
     border-radius: 20px;
     overflow: hidden;
     background-color: #ffffff;
@@ -95,6 +232,48 @@
 
 .chat-message {
     height: 75%;
+    overflow-y: auto;
+}
+
+.chat-message> :first-child {
+    margin-top: auto;
+}
+
+.chat-bubble-container {
+    justify-content: start;
+}
+
+.chat-bubble-container.sender {
+    justify-content: end;
+}
+
+.chat-bubble {
+    position: relative;
+    background: #f0f0f0;
+    color: #050505;
+    padding: 8px 8px 18px 90px;
+    margin-bottom: 16px;
+    margin-left: 20px;
+    border-radius: 8px;
+    width: fit-content;
+    max-width: 60%;
+}
+
+.chat-bubble.sender {
+    color: #ffffff;
+    background: #0a7cff;
+}
+
+.chat-message .chat-date {
+    position: absolute;
+    bottom: 2px;
+    right: 8px;
+    font-size: 0.7rem;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.chat-message .chat-date.sender {
+    color: #ffffff;
 }
 
 .chat-input {
@@ -126,9 +305,13 @@
     background: #f4f4f4;
 }
 
+.chat-input .input-info button {
+    border: none;
+    background: #f4f4f4;
+}
+
 .chat-input .input-info .input-icon {
     font-size: 20px;
-    cursor: pointer;
 }
 
 .chat-input .input-info .input-icon:is(:last-child) {

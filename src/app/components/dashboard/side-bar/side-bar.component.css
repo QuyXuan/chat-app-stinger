@@ -172,12 +172,12 @@
 
 .setting-absolute {
     position: absolute;
-    width: 218px;
+    width: calc(100% - 2rem);
     bottom: 50px;
 }
 
 .logout-absolute {
     position: absolute;
-    width: 218px;
+    width: calc(100% - 2rem);
     bottom: 150px
 }

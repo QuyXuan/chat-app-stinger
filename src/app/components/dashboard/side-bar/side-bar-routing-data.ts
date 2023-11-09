@@ -32,7 +32,6 @@ export const sideBarRoutingData: ISidebarData[] = [
     label: 'Chats',
     icon: faMessage,
     routerLink: 'chat',
-    sideRouterLink: 'chat-side',
     outlet: 'body',
   },
   {

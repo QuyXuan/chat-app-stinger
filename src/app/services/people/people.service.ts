@@ -1,240 +1,353 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { AngularFireStorage } from '@angular/fire/compat/storage';
-import { BehaviorSubject, map } from 'rxjs';
-import firebase from 'firebase/compat/app';
+import {
+  addDoc,
+  collection,
+  collectionData,
+  deleteDoc,
+  Firestore,
+  getDocs,
+  query,
+  where,
+} from '@angular/fire/firestore';
+import {
+  from,
+  Observable,
+  switchMap,
+  of,
+  map,
+  mergeMap,
+  combineLatest,
+} from 'rxjs';
+import { UserService } from '../user/user.service';
+import { ProfileUser } from 'src/app/models/profile-user';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PeopleService {
-  currentUser = new BehaviorSubject<firebase.User | null>(null);
-  requestRef = this.fireStore.collection('requests');
-  friendRef = this.fireStore.collection('friends').ref;
+  constructor(private firestore: Firestore, private userService: UserService) {}
 
-  constructor(
-    private fireAuth: AngularFireAuth,
-    private fireStore: AngularFirestore,
-    private fireStorage: AngularFireStorage
-  ) {
-    this.fireAuth.authState.subscribe((user) => {
-      if (user) {
-        this.currentUser.next(user);
-      }
-    });
+  get allUsersExceptMe(): Observable<ProfileUser[]> {
+    return this.userService.currentUserProfile.pipe(
+      switchMap((currentUser) => {
+        if (currentUser) {
+          const userRef = collection(this.firestore, 'users');
+          const queryAll = query(
+            userRef,
+            where('email', '!=', currentUser.email)
+          );
+          return collectionData(queryAll) as Observable<ProfileUser[]>;
+        } else {
+          return of([]);
+        }
+      })
+    );
   }
 
-  getAllUsers() {
-    return this.fireStore
-      .collection('users')
-      .valueChanges()
-      .pipe(
-        map((users: any) => {
-          users.forEach((user: any, i: number) => {
-            if (user.email == this.currentUser.value?.email) {
-              users.splice(i, 1);
-            }
-          });
-          return users;
-        })
-      );
-  }
-
-  getFriendsOfUser() {
-    return new Promise<any[]>((resolve, reject) => {
-      let myFriendsEmail: any[] = [];
-      const queryFriendsOfUser = this.friendRef.where(
-        'email',
-        '==',
-        this.currentUser.value?.email
-      );
-      queryFriendsOfUser
-        .get()
-        .then((friendSnapshot) => {
-          if (!friendSnapshot.empty) {
-            this.fireStore
-              .doc(`friends/${friendSnapshot.docs[0].id}`)
-              .collection('myFriends')
-              .valueChanges()
-              .subscribe((myFriends) => {
-                myFriendsEmail = myFriends.map((friend) => friend['email']);
-                resolve(this.getUsers(myFriendsEmail));
+  get friendsOfUser(): Observable<ProfileUser[]> {
+    return this.userService.currentUserProfile.pipe(
+      switchMap((currentUser) => {
+        if (!currentUser) {
+          return of([]);
+        }
+        const friendRef = collection(this.firestore, 'friends');
+        const queryFriends = query(
+          friendRef,
+          where('email', '==', currentUser.email)
+        );
+        return from(getDocs(queryFriends)).pipe(
+          switchMap((querySnapshot) => {
+            if (!querySnapshot.empty) {
+              let friendsId = '';
+              querySnapshot.forEach((doc) => {
+                friendsId = doc.id;
               });
-          } else {
-            resolve(this.getUsers(myFriendsEmail));
-          }
-        })
-        .catch((error) => reject(error));
-    });
+              const myFriendsRef = collection(
+                this.firestore,
+                'friends',
+                friendsId,
+                'myFriends'
+              );
+              return from(getDocs(myFriendsRef)).pipe(
+                map((myFriendsEmailQuerySnapshot) => {
+                  const myFriendsEmail: string[] = [];
+                  if (!myFriendsEmailQuerySnapshot.empty) {
+                    myFriendsEmailQuerySnapshot.forEach((myFriend) => {
+                      myFriendsEmail.push(myFriend.data()['email']);
+                    });
+                  }
+                  return this.userService.getUsersByEmail(myFriendsEmail);
+                })
+              );
+            } else {
+              return of([]);
+            }
+          })
+        );
+      }),
+      switchMap((observableArray) => observableArray)
+    );
   }
 
-  getNewFriendsOfUser() {
-    return new Promise<any[]>((resolve, reject) => {
-      let users: any[] = [];
-      let myFriendsEmail: any[] = [];
-      let requestEmails: any[] = [];
-      const usersRef = this.fireStore.collection('users').ref;
-      const queryFriendsOfUser = this.friendRef.where(
-        'email',
-        '==',
-        this.currentUser.value?.email
-      );
-      queryFriendsOfUser
-        .get()
-        .then((friendSnapshot) => {
-          if (!friendSnapshot.empty) {
-            this.fireStore
-              .doc(`friends/${friendSnapshot.docs[0].id}`)
-              .collection('myFriends')
-              .valueChanges()
-              .subscribe((myFriends) => {
-                myFriendsEmail = myFriends.map((friend) => friend['email']);
-                const queryRequestsOfUser = this.requestRef.ref.where(
-                  'sender',
-                  '==',
-                  this.currentUser.value?.email
+  get pendingFriendsOfUser(): Observable<ProfileUser[]> {
+    return this.userService.currentUserProfile.pipe(
+      switchMap((currentUser) => {
+        if (!currentUser) {
+          return of([] as ProfileUser[]);
+        }
+        const pendingRef = collection(this.firestore, 'requests');
+        const queryPending = query(
+          pendingRef,
+          where('receiver', '==', currentUser.email)
+        );
+        return from(getDocs(queryPending)).pipe(
+          mergeMap((pendingSnapshot) => {
+            const pendingRequests: string[] = [];
+            pendingSnapshot.forEach((pending) => {
+              pendingRequests.push(pending.data()['sender']);
+            });
+            return this.userService.getUsersByEmail(pendingRequests);
+          })
+        );
+      })
+    );
+  }
+
+  get newFriendsOfUser(): Observable<ProfileUser[]> {
+    return combineLatest([
+      this.userService.currentUserProfile.pipe(
+        switchMap((currentUser) => {
+          if (currentUser) {
+            const userRef = collection(this.firestore, 'users');
+            const queryAll = query(
+              userRef,
+              where('email', '!=', currentUser.email)
+            );
+            return collectionData(queryAll);
+          } else {
+            return of([]);
+          }
+        }),
+        map((data) => {
+          return data.map((user) => user['email']);
+        })
+      ),
+      this.userService.currentUserProfile.pipe(
+        switchMap((currentUser) => {
+          if (currentUser) {
+            const pendingRef = collection(this.firestore, 'requests');
+            const queryPending = query(
+              pendingRef,
+              where('receiver', '==', currentUser.email)
+            );
+            return collectionData(queryPending);
+          } else {
+            return of([]);
+          }
+        }),
+        map((data) => {
+          return data.map((user) => user['sender']);
+        })
+      ),
+      this.userService.currentUserProfile.pipe(
+        switchMap((currentUser) => {
+          if (!currentUser) {
+            return of([]);
+          }
+          const friendRef = collection(this.firestore, 'friends');
+          const queryFriends = query(
+            friendRef,
+            where('email', '==', currentUser.email)
+          );
+          return from(getDocs(queryFriends)).pipe(
+            switchMap((querySnapshot) => {
+              if (!querySnapshot.empty) {
+                let friendsId = '';
+                querySnapshot.forEach((doc) => {
+                  friendsId = doc.id;
+                });
+                const myFriendsRef = collection(
+                  this.firestore,
+                  'friends',
+                  friendsId,
+                  'myFriends'
                 );
-                queryRequestsOfUser
-                  .get()
-                  .then((requestSnapshot) => {
-                    if (!requestSnapshot.empty) {
-                      requestSnapshot.docs.forEach((doc) => {
-                        const requestData = doc.data() as { receiver: string };
-                        requestEmails.push(requestData.receiver);
+                return from(getDocs(myFriendsRef)).pipe(
+                  map((myFriendsEmailQuerySnapshot) => {
+                    const emailList: string[] = [];
+                    if (!myFriendsEmailQuerySnapshot.empty) {
+                      myFriendsEmailQuerySnapshot.forEach((myFriend) => {
+                        emailList.push(myFriend.data()['email']);
                       });
                     }
+                    return emailList;
                   })
-                  .then(() => {
-                    const queryNewFriends = usersRef.where('email', 'not-in', [
-                      ...myFriendsEmail,
-                      ...requestEmails,
-                      this.currentUser.value?.email,
-                    ]);
-                    queryNewFriends.get().then((userSnapshot) => {
-                      if (!userSnapshot.empty) {
-                        userSnapshot.docs.forEach((doc) => {
-                          const userData = doc.data() as { email: string };
-                          if (userData.email !== this.currentUser.value?.email)
-                            users.push(doc.data());
-                        });
-                      }
-                    });
-                    resolve(users);
-                  });
-              });
-          } else {
-            resolve(users);
-          }
+                );
+              } else {
+                return of([]);
+              }
+            })
+          );
         })
-        .catch((error) => reject(error));
-    });
-  }
-
-  getUsers(emails: string[]) {
-    const users: any[] = [];
-    const usersRef = this.fireStore.collection('users').ref;
-    const query = usersRef.where('email', 'in', emails);
-    query.get().then((snapshot) => {
-      if (!snapshot.empty) {
-        snapshot.docs.forEach((doc) => {
-          users.push(doc.data());
+      ),
+    ]).pipe(
+      switchMap(([allUsersEmails, pendingFriendsEmails, myFriendsEmails]) => {
+        const newFriendsEmail = allUsersEmails.filter((email) => {
+          return (
+            !pendingFriendsEmails.includes(email) &&
+            !myFriendsEmails.includes(email)
+          );
         });
-      }
-    });
-    return users;
+        return this.userService.getUsersByEmail(newFriendsEmail);
+      })
+    );
   }
 
   sendFriendRequest(receiver: string) {
-    const request = {
-      sender: this.currentUser.value?.email,
-      receiver: receiver,
-    };
-    return this.requestRef.add(request);
-  }
-
-  getMyRequests() {
-    return this.fireStore
-      .collection('requests', (ref) =>
-        ref.where('sender', '==', this.currentUser.value?.email)
-      )
-      .valueChanges();
-  }
-
-  async acceptMyRequest(friendEmail: string) {
-    try {
-      const queryEmailOfCurrentUser = this.friendRef.where(
-        'email',
-        '==',
-        this.currentUser.value?.email
-      );
-      const queryEmailOfFriend = this.friendRef.where(
-        'email',
-        '==',
-        friendEmail
-      );
-
-      const [snapshotCurrentUser, snapshotFriend] = await Promise.all([
-        queryEmailOfCurrentUser.get(),
-        queryEmailOfFriend.get(),
-      ]);
-
-      if (snapshotCurrentUser.empty) {
-        const currentUserDoc = await this.friendRef.add({
-          email: this.currentUser.value?.email,
-        });
-        await currentUserDoc.collection('myFriends').add({
-          email: friendEmail,
-        });
-      } else {
-        const currentUserFriendDoc = this.fireStore.doc(
-          `friends/${snapshotCurrentUser.docs[0].id}`
-        );
-        await currentUserFriendDoc
-          .collection('myFriends')
-          .add({ email: friendEmail });
-      }
-
-      if (snapshotFriend.empty) {
-        const friendDoc = await this.friendRef.add({ email: friendEmail });
-        await friendDoc.collection('myFriends').add({
-          email: this.currentUser.value?.email,
-        });
-      } else {
-        const friendUserDoc = this.fireStore.doc(
-          `friends/${snapshotFriend.docs[0].id}`
-        );
-        await friendUserDoc.collection('myFriends').add({
-          email: this.currentUser.value?.email,
-        });
-      }
-
-      await this.deleteRequest(friendEmail);
-      return true;
-    } catch (error) {
-      console.error('Error accepting request:', error);
-      return false;
-    }
-  }
-
-  deleteRequest(email: string) {
     return new Promise((resolve) => {
-      const requestRef = this.requestRef.ref;
-      const query = requestRef.where('receiver', '==', email);
-      query.get().then((snapshot) => {
-        if (!snapshot.empty) {
-          const firstDoc = snapshot.docs[0];
-          if (firstDoc) {
-            firstDoc.ref.delete().then(() => {
+      this.userService.currentUserProfile.subscribe((user) => {
+        if (user) {
+          const request = {
+            sender: user.email,
+            receiver: receiver,
+          };
+          addDoc(collection(this.firestore, 'requests'), request)
+            .then(() => {
               resolve(true);
+            })
+            .catch((error) => {
+              resolve(false);
             });
+        }
+      });
+    });
+  }
+
+  acceptRequest(friendEmail: string) {
+    this.userService.currentUserProfile.subscribe((user) => {
+      const queryFriendsOfCurrentUser = query(
+        collection(this.firestore, 'friends'),
+        where('email', '==', user?.email)
+      );
+      const queryFriendsOfFriend = query(
+        collection(this.firestore, 'friends'),
+        where('email', '==', friendEmail)
+      );
+
+      Promise.all([
+        getDocs(queryFriendsOfCurrentUser),
+        getDocs(queryFriendsOfFriend),
+      ]).then(([friendSnapshotCurrentUser, friendSnapshotFriend]) => {
+        const addFriendPromises: Promise<any>[] = [];
+
+        if (friendSnapshotCurrentUser.empty) {
+          const currentUserFriendRef = addDoc(
+            collection(this.firestore, 'friends'),
+            {
+              email: user?.email,
+            }
+          ).then((currentUserDoc) => {
+            return addDoc(
+              collection(
+                this.firestore,
+                'friends',
+                currentUserDoc.id,
+                'myFriends'
+              ),
+              {
+                email: friendEmail,
+              }
+            );
+          });
+          addFriendPromises.push(currentUserFriendRef);
+        } else {
+          friendSnapshotCurrentUser.forEach((doc) => {
+            const currentUserFriendRef = addDoc(
+              collection(this.firestore, 'friends', doc.id, 'myFriends'),
+              {
+                email: friendEmail,
+              }
+            );
+            addFriendPromises.push(currentUserFriendRef);
+          });
+        }
+
+        if (friendSnapshotFriend.empty) {
+          const friendFriendRef = addDoc(
+            collection(this.firestore, 'friends'),
+            {
+              email: friendEmail,
+            }
+          ).then((friendUserDoc) => {
+            return addDoc(
+              collection(
+                this.firestore,
+                'friends',
+                friendUserDoc.id,
+                'myFriends'
+              ),
+              {
+                email: user?.email,
+              }
+            );
+          });
+          addFriendPromises.push(friendFriendRef);
+        } else {
+          friendSnapshotFriend.forEach((doc) => {
+            const friendFriendRef = addDoc(
+              collection(this.firestore, 'friends', doc.id, 'myFriends'),
+              {
+                email: user?.email,
+              }
+            );
+            addFriendPromises.push(friendFriendRef);
+          });
+        }
+
+        Promise.all(addFriendPromises)
+          .then(() => {
+            this.deleteRequest(friendEmail)
+              .then(() => {
+                return true;
+              })
+              .catch((error) => {
+                return false;
+              });
+          })
+          .catch((error) => {
+            return false;
+          });
+      });
+    });
+  }
+
+  deleteRequest(sender: string) {
+    return new Promise((resolve) => {
+      const queryRequest = query(
+        collection(this.firestore, 'requests'),
+        where('sender', '==', sender)
+      );
+      getDocs(queryRequest)
+        .then((snapshot) => {
+          if (!snapshot.empty) {
+            const deletePromises = snapshot.docs.map((doc) =>
+              deleteDoc(doc.ref)
+            );
+
+            Promise.all(deletePromises)
+              .then(() => {
+                resolve(true);
+              })
+              .catch((error) => {
+                resolve(false);
+              });
           } else {
             resolve(false);
           }
-        } else {
+        })
+        .catch((error) => {
           resolve(false);
-        }
-      });
+        });
     });
   }
 }

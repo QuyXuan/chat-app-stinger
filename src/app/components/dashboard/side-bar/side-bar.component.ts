@@ -79,22 +79,8 @@ export class SideBarComponent implements OnInit {
   }
 
   getRouterLink(data: ISidebarData) {
-    if (data.routerLink === 'chat') {
-      return [
-        '/dashboard',
-        {
-          outlets: {
-            body: [data.routerLink],
-            'side-body': [data.sideRouterLink],
-          },
-        },
-      ];
-    }
     if (data.outlet === 'body') {
       return ['/dashboard', { outlets: { body: [data.routerLink] } }];
-    }
-    if (data.outlet === 'side-body') {
-      return ['/dashboard', { outlets: { 'side-body': [data.routerLink] } }];
     }
     return [''];
   }
