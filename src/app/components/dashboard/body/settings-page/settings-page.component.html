@@ -1,0 +1,72 @@
+<div class="heading-item">
+    <div class="heading-item__left">
+        <h2 class="heading-item__title">Settings</h2>
+        <p class="heading-item__content">Change your app setting.</p>
+    </div>
+    <div class="child-item__right">
+        <a
+            *ngIf="selectedItemContent !== ''; else close"
+            class="btn-choose-back"
+            (click)="goBackSettings()"
+        >
+            <svg
+                width="6"
+                height="12"
+                viewBox="0 0 6 12"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <path
+                    d="M5.5 1L0.5 6L5.5 11"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
+        </a>
+        <ng-template #close>
+            <button #close class="btn-close" (click)="handleBtnCloseClick()"></button>
+        </ng-template>
+    </div>
+</div>
+<div class="main-settings-content custom-scroll">
+    <div [ngSwitch]="selectedItemContent">
+        <div *ngSwitchCase="'Name'">
+            <form (ngSubmit)="onSubmitForm()">
+                <div class="mb-2">
+                  <label for="nameUser" class="form-label heading-item__label">Display name</label>
+                  <input type="text" class="form-control" name="nameUser" [(ngModel)]="currentUser.displayName">
+                </div>
+                <div class="mb-2">
+                  <label for="emailUser" class="form-label heading-item__label">Email</label>
+                  <input type="email" name="emailUser" class="form-control" aria-describedby="emailHelp" [(ngModel)]="currentUser.email">
+                </div>
+                <div class="mb-2">
+                  <label for="addressUser" class="form-label heading-item__label">Address</label>
+                  <input type="text" name="addressUser" class="form-control" [(ngModel)]="currentUser.address" >
+                </div>
+                <button type="submit" class="btn-animation">Submit</button>
+              </form>
+        </div>
+        <div *ngSwitchCase="'Account'">
+            {{ selectedItemContent }}
+        </div>
+        <div *ngSwitchCase="'Chat'">
+            {{ selectedItemContent }}
+        </div>
+        <div *ngSwitchCase="'Intelligent'">
+            {{ selectedItemContent }}
+        </div>
+        <div *ngSwitchCase="'Help'">
+            {{ selectedItemContent }}
+        </div>
+        <div *ngSwitchDefault>
+            <app-settings-item
+                *ngFor="let item of items"
+                [data]="item"
+                (itemSelected)="onItemSelected($event)"
+            >
+            </app-settings-item>
+        </div>
+    </div>
+</div>

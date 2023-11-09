@@ -43,8 +43,8 @@ export const sideBarRoutingData: ISidebarData[] = [
   {
     label: 'Settings',
     icon: faGear,
-    routerLink: 'setting',
-    outlet: 'body',
+    routerLink: 'settings',
+    outlet: 'side-body',
   },
   {
     label: 'Logout',
