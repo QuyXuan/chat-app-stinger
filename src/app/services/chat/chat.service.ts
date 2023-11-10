@@ -17,12 +17,17 @@ import { UserService } from '../user/user.service';
 import { Chat } from 'src/app/models/chat';
 import { ProfileUser } from 'src/app/models/profile-user';
 import { Message } from 'src/app/models/message';
+import { Socket, io } from 'socket.io-client';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ChatService {
-  constructor(private firestore: Firestore, private userService: UserService) {}
+  private socket: Socket | undefined;
+  private url = 'http://localhost:3000';
+  constructor(private firestore: Firestore, private userService: UserService) {
+    this.socket = io(this.url);
+  }
 
   get myChats(): Observable<Chat[]> {
     return this.userService.currentUserProfile.pipe(
@@ -118,5 +123,9 @@ export class ChatService {
     const msgRef = collection(this.firestore, 'chats', chatId, 'messages');
     const queryAllMsg = query(msgRef, orderBy('sentDate', 'asc'));
     return collectionData(queryAllMsg) as Observable<Message[]>;
+  }
+
+  socketSendMessage(data: any) {
+    this.socket?.emit('message', data);
   }
 }

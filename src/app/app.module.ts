@@ -35,6 +35,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DateDisplayPipe } from './pipes/date-display/date-display.pipe';
 import { DatePipe } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -68,6 +69,7 @@ import { DatePipe } from '@angular/common';
     NgbModule,
     FontAwesomeModule,
     BrowserAnimationsModule,
+    HttpClientModule,
   ],
   providers: [DatePipe],
   bootstrap: [AppComponent],
