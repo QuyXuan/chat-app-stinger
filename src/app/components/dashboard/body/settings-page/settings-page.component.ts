@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core'
 import { NgToastService } from 'ng-angular-popup'
+import { constants } from 'src/app/constants'
 import { DataTransferService } from 'src/app/services/data-transfer/data.service'
 import { SelectedItem } from 'src/app/services/data-transfer/selected-item'
 import { SettingsService } from 'src/app/services/settings/settings.service'
@@ -168,7 +169,7 @@ export class SettingsPageComponent implements OnInit {
 
     handleBtnCloseClick() {
         this.dataTransferService.updateSelectedNavLinkId(
-            new SelectedItem(1, 'Chats')
+            new SelectedItem(constants.PREVIOUS_NAV_LINK_ID, 'Chats')
         )
     }
 }

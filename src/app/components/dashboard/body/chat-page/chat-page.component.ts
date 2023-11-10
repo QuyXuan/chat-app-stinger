@@ -17,6 +17,8 @@ import { Chat } from 'src/app/models/chat';
 import { Message } from 'src/app/models/message';
 import { ProfileUser } from 'src/app/models/profile-user';
 import { ChatService } from 'src/app/services/chat/chat.service';
+import { DataTransferService } from 'src/app/services/data-transfer/data.service';
+import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
@@ -25,6 +27,8 @@ import { UserService } from 'src/app/services/user/user.service';
   styleUrls: ['./chat-page.component.css'],
 })
 export class ChatPageComponent implements OnInit {
+  isShowChatSidebar: boolean = true;
+
   @ViewChild('endOfChat')
   endOfChat: ElementRef | undefined;
   faIcon = {
@@ -58,7 +62,8 @@ export class ChatPageComponent implements OnInit {
   constructor(
     private userService: UserService,
     private chatService: ChatService,
-    private router: Router
+    private router: Router,
+    private dataService: DataTransferService
   ) {
     const currentNavigation = this.router.getCurrentNavigation();
     if (
@@ -71,10 +76,19 @@ export class ChatPageComponent implements OnInit {
         const chat = chats.find((chat) => chat.id === chatId);
         this.selectChat(chat);
       });
+      this.dataService.updateSelectedNavLinkId(new SelectedItem(1, 'Chats'));
     }
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.dataService.selectedNavLink.subscribe((selectedNavLink: SelectedItem) => {
+      if (selectedNavLink.name != '' && selectedNavLink.name != 'Chats') {
+        this.isShowChatSidebar = false;
+      } else {
+        this.isShowChatSidebar = true;
+      }
+    });
+  }
 
   createChat(friend: ProfileUser) {
     this.chatService.createChat(friend).subscribe();
