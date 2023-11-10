@@ -11,7 +11,10 @@
         [formControl]="searchControl"
       />
     </div>
-    <ul class="chat-main custom-scroll mt-3">
+    <ul
+      class="chat-main custom-scroll mt-3"
+      [style.visibility]="isShowChatSidebar ? 'visible' : 'hidden'"
+    >
       <li
         *ngFor="let chat of myChats | async"
         [value]="chat.id"

@@ -26,10 +26,10 @@
         class="sidenav-nav-link"
         *ngIf="data.items && data.items.length > 0"
         (click)="index === sideBarData.length ? logout() : handleClick(data)"
-        [ngClass] = "getActiveClass(data)"
-        [ngClass] = "{
-          'is-closed-side-bar': !collapsed, 
-          'active': index == selectedNavLinkId
+        [ngClass]="getActiveClass(data)"
+        [ngClass]="{
+          'is-closed-side-bar': !collapsed,
+          active: index == selectedNavLinkId
         }"
       >
         <fa-icon
@@ -48,14 +48,19 @@
       </a>
       <a
         class="sidenav-nav-link"
-        *ngIf="!data.items || (data.items && data.items.length === 0)"
-        (click)="index === sideBarData.length - 1 ? logout() : handleClickNavLink(index)"
-        [routerLink]="index === sideBarData.length - 1 ? '': ['/dashboard', { outlets: { 'body': 'chat' } }]"
+        *ngIf="
+          (!data.items || (data.items && data.items.length === 0)) &&
+            index !== 1 &&
+            index !== this.sideBarData.length - 1;
+          else navHasHref
+        "
+        (click)="handleClickNavLink(index)"
+        href="javascript: void(0)"
         [ngClass]="{
           'is-closed-side-bar': !collapsed,
           'setting-absolute': index === sideBarData.length - 1,
           'logout-absolute': index === sideBarData.length - 2,
-          'active': index == selectedNavLinkId
+          active: index == selectedNavLinkId
         }"
       >
         <fa-icon
@@ -67,6 +72,32 @@
           {{ data.label }}
         </span>
       </a>
+      <ng-template #navHasHref>
+        <a
+          *ngIf="index !== 0"
+          class="sidenav-nav-link"
+          (click)="index == this.sideBarData.length - 1 ? this.logout() : handleClickNavLink(index)"
+          [routerLink]="
+            index == this.sideBarData.length - 1
+              ? ''
+              : ['/dashboard', { outlets: { body: 'chat' } }]
+          "
+          [ngClass]="{
+          'is-closed-side-bar': !collapsed,
+          'setting-absolute': index === sideBarData.length - 1,
+          active: index == selectedNavLinkId
+        }"
+        >
+          <fa-icon
+            *ngIf="data.icon"
+            [icon]="data.icon"
+            class="sidenav-link-icon"
+          ></fa-icon>
+          <span class="sidenav-link-text" @fadeInOut *ngIf="collapsed">
+            {{ data.label }}
+          </span>
+        </a>
+      </ng-template>
       <div *ngIf="collapsed && data.items && data.items.length > 0">
         <app-sub-level-menu
           [data]="data"

@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { faClose, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { constants } from 'src/app/constants';
 import { DataTransferService } from 'src/app/services/data-transfer/data.service';
 import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 
@@ -20,6 +21,6 @@ export class NotificationPageComponent {
   constructor(private dataTransferService: DataTransferService) { }
 
   handleBtnCloseClick() {
-    this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(1, 'Chats'));
+    this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(constants.PREVIOUS_NAV_LINK_ID, 'Chats'));
   }
 }

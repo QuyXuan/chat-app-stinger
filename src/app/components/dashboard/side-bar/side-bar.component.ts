@@ -50,7 +50,8 @@ interface SideNavToggle {
   ],
 })
 export class SideBarComponent implements OnInit {
-  selectedNavLinkId!: number;
+  // Mặc định mới vào sẽ active menu item Chat
+  selectedNavLinkId: number = 1;
 
   @Output() onToggleSideNav: EventEmitter<SideNavToggle> = new EventEmitter();
 
@@ -89,6 +90,11 @@ export class SideBarComponent implements OnInit {
     this.dataTransferService.selectedNavLink.subscribe((data: SelectedItem) => {
       this.selectedNavLinkId = data.id;
     });
+
+    if (this.router.url.includes('people')) {
+      this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(0, ''));
+      this.sideBarData[0].expanded = true;
+    }
   }
 
   getRouterLink(data: ISidebarData) {
@@ -115,7 +121,6 @@ export class SideBarComponent implements OnInit {
   }
 
   handleClick(item: ISidebarData) {
-    this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(0, ''));
     if (!this.multiple) {
       for (let modelItem of this.sideBarData) {
         if (item !== modelItem && modelItem.expanded) {
@@ -141,6 +146,18 @@ export class SideBarComponent implements OnInit {
 
   handleClickNavLink(navLinkIndex: number): void {
     this.selectedNavLinkId = navLinkIndex;
+    this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(navLinkIndex, this.sideBarData[navLinkIndex].label))
     this.onClickNavLink.emit(this.sideBarData[navLinkIndex].label);
+  }
+
+  getRouterNavLink(navLinkIndex: number) {
+    if (navLinkIndex == this.sideBarData.length - 1) {
+      // Khi nhấn logout
+      return '';
+    }
+    if (this.sideBarData[navLinkIndex].label === 'Chats') {
+      return ['/dashboard', { outlets: { 'body': 'chat' } }];
+    }
+    return ['/dashboard'];
   }
 }
