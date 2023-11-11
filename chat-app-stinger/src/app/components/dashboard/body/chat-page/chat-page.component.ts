@@ -62,7 +62,7 @@ export class ChatPageComponent implements OnInit {
     faPaperPlane: faPaperPlane,
     faPlus: faPlus,
     faImage: faImage,
-    faRecord: faMicrophone
+    faRecord: faMicrophone,
   };
   searchControl = new FormControl('');
   messageControl = new FormControl('');
@@ -100,13 +100,15 @@ export class ChatPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.dataService.selectedNavLink.subscribe((selectedNavLink: SelectedItem) => {
-      if (selectedNavLink.name != '' && selectedNavLink.name != 'Chats') {
-        this.isShowChatSidebar = false;
-      } else {
-        this.isShowChatSidebar = true;
+    this.dataService.selectedNavLink.subscribe(
+      (selectedNavLink: SelectedItem) => {
+        if (selectedNavLink.name != '' && selectedNavLink.name != 'Chats') {
+          this.isShowChatSidebar = false;
+        } else {
+          this.isShowChatSidebar = true;
+        }
       }
-    });
+    );
   }
 
   createChat(friend: ProfileUser) {
@@ -136,19 +138,24 @@ export class ChatPageComponent implements OnInit {
     //       });
     //   }
     // });
-    this.socketService.sendImages(this.userIdsInChat, this.selectedChatId, this.images);
+    this.socketService.sendImages(
+      this.userIdsInChat,
+      this.selectedChatId,
+      this.images
+    );
     this.images = [];
     this.messageControl.setValue('');
   }
 
   getUsersInChat(chatId: string) {
-    this.chatService.getUserIdsInChat(chatId)
+    this.chatService
+      .getUserIdsInChat(chatId)
       .then((userIds) => {
         this.userIdsInChat = userIds;
       })
       .catch((error) => {
         console.log('getUsersInChat: ', error);
-      })
+      });
   }
 
   scrollToBottom() {
@@ -166,7 +173,7 @@ export class ChatPageComponent implements OnInit {
   }
 
   /**
-   * Check phím người dùng bấm để xem liệu có nên cho nhập kí tự, xuống hàng hay gửi message 
+   * Check phím người dùng bấm để xem liệu có nên cho nhập kí tự, xuống hàng hay gửi message
    */
   onKeyDown(event: KeyboardEvent) {
     const lines = this.textareaContent.split('\n');
@@ -194,7 +201,7 @@ export class ChatPageComponent implements OnInit {
 
   /**
    * Xử lí sự kiện upload file
-   * @param event 
+   * @param event
    */
   onFileSelected(event: any) {
     this.isShowUploadDialog = !this.isShowUploadDialog;
@@ -206,7 +213,7 @@ export class ChatPageComponent implements OnInit {
         reader.onload = (e: any) => {
           const dataImage: DataImage = {
             fileName: file.name,
-            base64: e.target.result
+            base64: e.target.result,
           };
           this.images.push(dataImage);
         };
@@ -216,9 +223,11 @@ export class ChatPageComponent implements OnInit {
 
   /**
    * Xử lí sự kiện xoá 1 image khi người dùng click vào dấu X trên từng hình
-   * @param index 
+   * @param index
    */
   removeImage(index: number) {
-    this.images = this.images.filter((image, currentIndex) => currentIndex != index);
+    this.images = this.images.filter(
+      (image, currentIndex) => currentIndex != index
+    );
   }
 }
