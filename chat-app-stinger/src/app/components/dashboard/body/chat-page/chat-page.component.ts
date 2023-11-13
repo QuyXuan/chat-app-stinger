@@ -230,4 +230,14 @@ export class ChatPageComponent implements OnInit {
       (image, currentIndex) => currentIndex != index
     );
   }
+
+  /**
+   * Xử lí sự kiện xoá 1 image khi người dùng click vào dấu X trên từng hình
+   * @param index
+   */
+  removeImage(index: number) {
+    this.images = this.images.filter(
+      (image, currentIndex) => currentIndex != index
+    );
+  }
 }
