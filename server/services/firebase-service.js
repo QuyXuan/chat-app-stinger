@@ -1,7 +1,7 @@
 const admin = require('firebase-admin');
 const serviceAccount = require('../firebase-admin-key.json');
 const storageBucketName = 'chatappstinger.appspot.com';
-const { getStorage, ref } = require ('firebase-admin/storage');
+const { getStorage, ref } = require('firebase-admin/storage');
 
 class FirebaseService {
     constructor() {
