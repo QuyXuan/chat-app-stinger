@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import { DataImage } from 'src/app/components/dashboard/body/chat-page/data-image';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SocketService {
   private fileSocket: any;
@@ -15,19 +15,25 @@ export class SocketService {
     const accessToken = JSON.parse(localStorage.getItem('access_token') ?? '');
     this.currentUserId = accessToken.user.uid;
     this.fileSocket.emit('login', {
-      userId: this.currentUserId
-    })
+      userId: this.currentUserId,
+    });
 
     this.fileSocket.on('images', (response: any) => {
       console.log(response);
-    })
+    });
   }
 
-  public sendImages(userIdsInChat: string[], chatId: string, images: DataImage[]) {
-    const otherUserIds = userIdsInChat.filter((userId) => userId !== this.currentUserId);
+  public sendImages(
+    userIdsInChat: string[],
+    chatId: string,
+    images: DataImage[]
+  ) {
+    const otherUserIds = userIdsInChat.filter(
+      (userId) => userId !== this.currentUserId
+    );
     images.forEach((image, index) => {
       this.sendPartsOfImage(otherUserIds, chatId, image, index, images.length);
-    })
+    });
   }
 
   /**
@@ -35,7 +41,13 @@ export class SocketService {
    * @param image: base64 của image
    * @param index: index của image trong danh sách các image mà client nhấn gửi
    */
-  private sendPartsOfImage(otherUserIds: string[], chatId: string, dataImage: DataImage, index: number, imageCount: number) {
+  private sendPartsOfImage(
+    otherUserIds: string[],
+    chatId: string,
+    dataImage: DataImage,
+    index: number,
+    imageCount: number
+  ) {
     // Gửi từng chunk có kích thước 1MB qua server
     const chunkSize = 1024 * 1024;
     const totalBytes = dataImage.base64.length;
@@ -55,7 +67,7 @@ export class SocketService {
         imageId: index,
         chunkIndex,
         chunk,
-        totalChunks
+        totalChunks,
       });
     }
   }

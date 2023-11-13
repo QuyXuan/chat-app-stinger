@@ -208,6 +208,7 @@ export class ChatPageComponent implements OnInit {
     const files = event.target.files;
     if (files) {
       for (const file of files) {
+        this.imagesAsFile.push(file);
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = (e: any) => {
