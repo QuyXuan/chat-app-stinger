@@ -20,6 +20,8 @@ class FileServer {
     initializeServer() {
         this.app = express();
         this.server = http.createServer(this.app);
+
+        // Lưu lại 1 Map các id user và Socket của họ để khi server gửi lại thì sẽ biết dùng gửi đến client bằng socket nào
         this.users = new Map();
 
         // Lưu thông tin 
@@ -45,15 +47,20 @@ class FileServer {
         this.io.on('connection', (socket) => {
             this.socketDataMap.set(socket.id, {});
             let currentUserId = '';
+
+            // Dùng 1 mảng lưu lại các ảnh mà user này đã upload, mục đích lưu cả danh sách này vào 1 collection trong 1 message mới
+            let uploadImages = [];
+
             console.log('Client đã kết nối');
 
             socket.on('login', (data) => {
+                console.log(data.userId, socket.id);
                 currentUserId = data.userId;
                 this.users.set(data.userId, socket);
             });
 
             socket.on('image', (data) => {
-                this.combineChunksOfImage(socket, data);
+                this.combineChunksOfImage(socket, data, uploadImages);
             })
 
             socket.on('disconnect', () => {
@@ -68,8 +75,7 @@ class FileServer {
      * @param socket: socket của user đang kết nối 
      * @param data:  id, chunkIndex, chunk, totalChunk
      */
-    combineChunksOfImage(socket, data) {
-        console.log(`Received data from client (${socket.id}, ${data.chunkIndex}): ${data.chunk.length} bytes to clients: ${data.toUsers}`);
+    combineChunksOfImage(socket, data, uploadImages) {
         const socketData = this.socketDataMap.get(socket.id);
         if (!socketData[data.imageId]) {
             socketData[data.imageId] = {};
@@ -82,15 +88,39 @@ class FileServer {
             // Khi đã nhận đã số chunk đã chia nhỏ của file thì tiến hành gộp lại
             const completeBase64Data = Object.values(socketData[data.imageId]).join('');
             delete socketData[data.imageId];
-            console.log(`All chunks from ${socket.id} for image ${data.imageId} received and combined successfully`);
-            this.saveDataIntoDB(data.chatId, data.imageId, data.fileName, completeBase64Data);
+            this.saveDataIntoDB(data.fromUser, data.chatId, data.imageId, data.fileName, completeBase64Data, uploadImages, data.imageCount)
         }
     }
 
-    saveDataIntoDB(chatId, imageId, fileName, base64Data) {
+    saveDataIntoDB(fromUserId, chatId, imageId, fileName, base64Data, uploadImages, imageCount) {
         const fileNameInFirebase = `${new Date().getTime()}_${chatId}_${imageId}_${fileName}`;
-        firebaseStorage.saveBase64ToImageFolder(base64Data, fileNameInFirebase);
+        firebaseStorage.saveBase64ToImageFolder(base64Data, fileNameInFirebase)
+            .then((imageURL) => {
+                uploadImages.push(imageURL);
+                if (uploadImages.length === imageCount) {
+                    firebaseStorage.saveImagesIntoDB(chatId, fromUserId, uploadImages)
+                        .then(() => {
+                            this.sendDataToChatRoom(chatId, uploadImages);
+                        });
+                }
+            });
     }
+
+    sendDataToChatRoom(chatId, uploadImages) {
+        firebaseStorage.getUsersInChatRoom(chatId)
+            .then((userIds) => {
+                console.log('Nội dung gửi: ', uploadImages);
+                console.log('Các user trong room:');
+                userIds.forEach((userId) => {
+                    const socket = this.users.get(userId);
+                    socket.emit('images', uploadImages);
+                });
+
+                // Xoá danh sách ảnh đã upload ngay sau khi gửi xong để sẵn sàng nhận cho
+                uploadImages.splice(0, uploadImages.length);
+            });
+    }
+
 }
 
 module.exports = FileServer;
