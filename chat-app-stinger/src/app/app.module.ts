@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { ImageCropperModule } from 'ngx-image-cropper';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -35,6 +36,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DateDisplayPipe } from './pipes/date-display/date-display.pipe';
 import { DatePipe } from '@angular/common';
+import { ThumbnailUploadComponent } from './components/thumbnail-upload/thumbnail-upload.component';
 
 @NgModule({
   declarations: [
@@ -51,6 +53,7 @@ import { DatePipe } from '@angular/common';
     NotificationPageComponent,
     DateDisplayPipe,
     PageNotFoundComponent,
+    ThumbnailUploadComponent,
   ],
   imports: [
     provideFirebaseApp(() => initializeApp(environment.firebase)),
@@ -58,6 +61,7 @@ import { DatePipe } from '@angular/common';
     provideDatabase(() => getDatabase()),
     provideFirestore(() => getFirestore()),
     BrowserModule,
+    ImageCropperModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule,
@@ -72,4 +76,4 @@ import { DatePipe } from '@angular/common';
   providers: [DatePipe],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }

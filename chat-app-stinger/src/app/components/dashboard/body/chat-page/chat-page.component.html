@@ -96,23 +96,71 @@
       </div>
 
       <div class="chat-input">
-        <div class="input-info">
-          <fa-icon [icon]="faIcon.faPaperclip" class="input-icon"></fa-icon>
-          <input
-            type="text"
-            class="input-content"
+        <button
+          class="btn-upload"
+          (click)="this.isShowUploadDialog = !this.isShowUploadDialog"
+        >
+          <fa-icon [icon]="faIcon.faPlus" class="input-icon"></fa-icon>
+        </button>
+        <div class="input-content-block">
+          <div class="thumbnails custom-scroll">
+            <div *ngFor="let image of images; index as index">
+              <app-thumbnail-upload
+                [image]="image.base64"
+                [index]="index"
+                (removeImage)="removeImage($event)"
+              ></app-thumbnail-upload>
+            </div>
+          </div>
+
+          <textarea
+            #inputContent
+            class="input-content custom-scroll"
             placeholder="Type your message here"
+            rows="{{ currentRows }}"
             [formControl]="messageControl"
             (keydown.enter)="sendMessage()"
-          />
-          <!-- <fa-icon [icon]="faIcon.faIcons" class="input-icon"></fa-icon> -->
-          <button>
-            <fa-icon [icon]="faIcon.faCamera" class="input-icon"></fa-icon>
-          </button>
-          <button (click)="sendMessage()">
-            <fa-icon [icon]="faIcon.faPaperPlane" class="input-icon"></fa-icon>
-          </button>
+            (keydown)="onKeyDown($event)"
+            [(ngModel)]="textareaContent"
+          ></textarea>
+
+          <!-- Upload dialog này chỉ hiển thị khi click vào nút + -->
+          <div class="upload-dialog" *ngIf="isShowUploadDialog">
+            <ul class="upload-types">
+              <li class="type" (click)="uploadImages()">
+                <a href="javascript: void(0)">
+                  <fa-icon class="icon" [icon]="faIcon.faImage"></fa-icon>
+                  Gallery
+                </a>
+              </li>
+              <li class="type">
+                <a href="javascript: void(0)">
+                  <fa-icon [icon]="faIcon.faPaperclip" class="icon"></fa-icon>
+                  Attach
+                </a>
+              </li>
+              <li class="type">
+                <a href="javascript: void(0)">
+                  <fa-icon [icon]="faIcon.faCamera" class="icon"></fa-icon>
+                  Camera
+                </a>
+              </li>
+            </ul>
+            <input
+              class="d-none"
+              #fileInput
+              multiple
+              type="file"
+              (change)="onFileSelected($event)"
+            />
+          </div>
         </div>
+        <button>
+          <fa-icon [icon]="faIcon.faRecord" class="input-icon"></fa-icon>
+        </button>
+        <button (click)="sendMessage()">
+          <fa-icon [icon]="faIcon.faPaperPlane" class="input-icon"></fa-icon>
+        </button>
       </div>
     </ng-container>
     <ng-template #noChat>
