@@ -37,6 +37,8 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DateDisplayPipe } from './pipes/date-display/date-display.pipe';
 import { DatePipe } from '@angular/common';
 import { ThumbnailUploadComponent } from './components/thumbnail-upload/thumbnail-upload.component';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 @NgModule({
   declarations: [
@@ -72,8 +74,10 @@ import { ThumbnailUploadComponent } from './components/thumbnail-upload/thumbnai
     NgbModule,
     FontAwesomeModule,
     BrowserAnimationsModule,
+    NgSelectModule,
+    InfiniteScrollModule,
   ],
   providers: [DatePipe],
   bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

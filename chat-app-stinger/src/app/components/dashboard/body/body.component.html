@@ -2,7 +2,8 @@
   <div
     class="side-body"
     [ngClass]="{
-      visible: selectedNavLink == 'Notifications'
+      visible: selectedNavLink == 'Notifications',
+      'slide-in': selectedNavLink == 'Notifications',
     }"
   >
     <app-notification-page></app-notification-page>
@@ -10,7 +11,8 @@
   <div
     class="side-body"
     [ngClass]="{
-      visible: selectedNavLink == 'Settings'
+      visible: selectedNavLink == 'Settings',
+      'slide-in': selectedNavLink == 'Settings',
     }"
   >
     <app-settings-page></app-settings-page>

@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
-const firebaseStorage = require('../services/firebase.js');
+const firebaseService = require('../services/firebase.js');
 
 class TCPServer {
     constructor() {
@@ -60,7 +60,12 @@ class TCPServer {
 
             socket.on('images', (data) => {
                 this.combineChunksOfImage(socket, data, uploadImages);
-            })
+            });
+
+            socket.on('message', (data) => {
+                console.log('Message: ', data);
+                this.sendMessageToChatRoom(data.chatId, data.message);
+            });
 
             socket.on('disconnect', () => {
                 console.log('Client đã ngắt kết nối');
@@ -93,11 +98,11 @@ class TCPServer {
 
     saveDataIntoDB(fromUserId, chatId, imageId, fileName, base64Data, uploadImages, imageCount) {
         const fileNameInFirebase = `${new Date().getTime()}_${chatId}_${imageId}_${fileName}`;
-        firebaseStorage.saveBase64ToImageFolder(base64Data, fileNameInFirebase)
+        firebaseService.saveBase64ToImageFolder(base64Data, fileNameInFirebase)
             .then((imageURL) => {
                 uploadImages.push(imageURL);
                 if (uploadImages.length === imageCount) {
-                    firebaseStorage.saveImagesIntoDB(chatId, fromUserId, uploadImages)
+                    firebaseService.saveImagesIntoDB(chatId, fromUserId, uploadImages)
                         .then(() => {
                             this.sendDataToChatRoom(chatId, uploadImages);
                         });
@@ -106,7 +111,7 @@ class TCPServer {
     }
 
     sendDataToChatRoom(chatId, uploadImages) {
-        firebaseStorage.getUsersInChatRoom(chatId)
+        firebaseService.getUsersInChatRoom(chatId)
             .then((userIds) => {
                 console.log('Nội dung gửi: ', uploadImages);
                 console.log('Các user trong room:');
@@ -118,6 +123,11 @@ class TCPServer {
                 // Xoá danh sách ảnh đã upload ngay sau khi gửi xong để sẵn sàng nhận cho
                 uploadImages.splice(0, uploadImages.length);
             });
+    }
+
+    sendTextToChatRoom(chatId, message) {
+        const socket = this.users.get(message.sendId);
+        socket.emit('text', message);
     }
 
 }

@@ -78,13 +78,22 @@ export class SignupPageComponent implements OnInit {
             })
           )
         )
-        .subscribe(() => {
-          this.router.navigate(['/dashboard']);
-          this.toastService.success({
-            detail: 'SUCCESS',
-            summary: 'Signup successfully',
-            duration: 3000,
-          });
+        .subscribe({
+          next: (userCredential) => {
+            this.router.navigate(['/dashboard']);
+            this.toastService.success({
+              detail: 'SUCCESS',
+              summary: 'Signup successfully',
+              duration: 3000,
+            });
+          },
+          error: (error) => {
+            this.toastService.error({
+              detail: 'ERROR',
+              summary: 'Signup failed',
+              duration: 3000,
+            });
+          },
         });
     }
   }

@@ -2,7 +2,7 @@
   <div class="list-people d-flex justify-content-start flex-wrap">
     <!-- item1 -->
     <div
-      *ngFor="let personData of allRequests; let i = index"
+      *ngFor="let personData of allRequests | async; let i = index"
       class="people-item"
     >
       <div class="avatar-img">
@@ -27,13 +27,6 @@
           >
             Delete
           </button>
-          <!-- <button
-            type="button"
-            class="add-btn btn btn-info"
-            (click)="addFriend(personData.email)"
-          >
-            Add friend
-          </button> -->
         </div>
       </div>
     </div>

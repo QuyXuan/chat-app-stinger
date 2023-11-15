@@ -17,6 +17,8 @@ import {
   map,
   mergeMap,
   combineLatest,
+  catchError,
+  forkJoin,
 } from 'rxjs';
 import { UserService } from '../user/user.service';
 import { ProfileUser } from 'src/app/models/profile-user';
@@ -203,151 +205,145 @@ export class PeopleService {
     );
   }
 
-  sendFriendRequest(receiver: string) {
-    return new Promise((resolve) => {
-      this.userService.currentUserProfile.subscribe((user) => {
-        if (user) {
+  sendFriendRequest(receiver: string): Observable<boolean> {
+    return this.userService.currentUserProfile.pipe(
+      switchMap((currentUser) => {
+        if (currentUser) {
           const request = {
-            sender: user.email,
+            sender: currentUser.email,
             receiver: receiver,
           };
-          addDoc(collection(this.firestore, 'requests'), request)
-            .then(() => {
-              resolve(true);
-            })
-            .catch((error) => {
-              resolve(false);
-            });
+          return from(
+            addDoc(collection(this.firestore, 'requests'), request)
+          ).pipe(switchMap(() => of(true)));
+        } else {
+          return of(false);
         }
-      });
-    });
+      })
+    );
   }
 
-  acceptRequest(friendEmail: string) {
-    this.userService.currentUserProfile.subscribe((user) => {
-      const queryFriendsOfCurrentUser = query(
-        collection(this.firestore, 'friends'),
-        where('email', '==', user?.email)
-      );
-      const queryFriendsOfFriend = query(
-        collection(this.firestore, 'friends'),
-        where('email', '==', friendEmail)
-      );
+  acceptRequest(friendEmail: string): Observable<boolean> {
+    return this.userService.currentUserProfile.pipe(
+      mergeMap((user) => {
+        const queryFriendsOfCurrentUser = query(
+          collection(this.firestore, 'friends'),
+          where('email', '==', user?.email)
+        );
+        const queryFriendsOfFriend = query(
+          collection(this.firestore, 'friends'),
+          where('email', '==', friendEmail)
+        );
 
-      Promise.all([
-        getDocs(queryFriendsOfCurrentUser),
-        getDocs(queryFriendsOfFriend),
-      ]).then(([friendSnapshotCurrentUser, friendSnapshotFriend]) => {
-        const addFriendPromises: Promise<any>[] = [];
+        return forkJoin({
+          friendSnapshotCurrentUser: getDocs(queryFriendsOfCurrentUser),
+          friendSnapshotFriend: getDocs(queryFriendsOfFriend),
+        }).pipe(
+          mergeMap(({ friendSnapshotCurrentUser, friendSnapshotFriend }) => {
+            const addFriendObservables: Observable<any>[] = [];
 
-        if (friendSnapshotCurrentUser.empty) {
-          const currentUserFriendRef = addDoc(
-            collection(this.firestore, 'friends'),
-            {
-              email: user?.email,
-            }
-          ).then((currentUserDoc) => {
-            return addDoc(
-              collection(
-                this.firestore,
-                'friends',
-                currentUserDoc.id,
-                'myFriends'
-              ),
-              {
-                email: friendEmail,
-              }
-            );
-          });
-          addFriendPromises.push(currentUserFriendRef);
-        } else {
-          friendSnapshotCurrentUser.forEach((doc) => {
-            const currentUserFriendRef = addDoc(
-              collection(this.firestore, 'friends', doc.id, 'myFriends'),
-              {
-                email: friendEmail,
-              }
-            );
-            addFriendPromises.push(currentUserFriendRef);
-          });
-        }
-
-        if (friendSnapshotFriend.empty) {
-          const friendFriendRef = addDoc(
-            collection(this.firestore, 'friends'),
-            {
-              email: friendEmail,
-            }
-          ).then((friendUserDoc) => {
-            return addDoc(
-              collection(
-                this.firestore,
-                'friends',
-                friendUserDoc.id,
-                'myFriends'
-              ),
-              {
-                email: user?.email,
-              }
-            );
-          });
-          addFriendPromises.push(friendFriendRef);
-        } else {
-          friendSnapshotFriend.forEach((doc) => {
-            const friendFriendRef = addDoc(
-              collection(this.firestore, 'friends', doc.id, 'myFriends'),
-              {
-                email: user?.email,
-              }
-            );
-            addFriendPromises.push(friendFriendRef);
-          });
-        }
-
-        Promise.all(addFriendPromises)
-          .then(() => {
-            this.deleteRequest(friendEmail)
-              .then(() => {
-                return true;
-              })
-              .catch((error) => {
-                return false;
+            if (friendSnapshotCurrentUser.empty) {
+              const currentUserFriendRef$ = from(
+                addDoc(collection(this.firestore, 'friends'), {
+                  email: user?.email,
+                })
+              ).pipe(
+                switchMap((currentUserDoc) => {
+                  return from(
+                    addDoc(
+                      collection(
+                        this.firestore,
+                        'friends',
+                        currentUserDoc.id,
+                        'myFriends'
+                      ),
+                      {
+                        email: friendEmail,
+                      }
+                    )
+                  );
+                })
+              );
+              addFriendObservables.push(currentUserFriendRef$);
+            } else {
+              friendSnapshotCurrentUser.forEach((doc) => {
+                const currentUserFriendRef$ = from(
+                  addDoc(
+                    collection(this.firestore, 'friends', doc.id, 'myFriends'),
+                    {
+                      email: friendEmail,
+                    }
+                  )
+                );
+                addFriendObservables.push(currentUserFriendRef$);
               });
+            }
+
+            if (friendSnapshotFriend.empty) {
+              const friendFriendRef$ = from(
+                addDoc(collection(this.firestore, 'friends'), {
+                  email: friendEmail,
+                })
+              ).pipe(
+                switchMap((friendUserDoc) => {
+                  return from(
+                    addDoc(
+                      collection(
+                        this.firestore,
+                        'friends',
+                        friendUserDoc.id,
+                        'myFriends'
+                      ),
+                      {
+                        email: user?.email,
+                      }
+                    )
+                  );
+                })
+              );
+              addFriendObservables.push(friendFriendRef$);
+            } else {
+              friendSnapshotFriend.forEach((doc) => {
+                const friendFriendRef$ = from(
+                  addDoc(
+                    collection(this.firestore, 'friends', doc.id, 'myFriends'),
+                    {
+                      email: user?.email,
+                    }
+                  )
+                );
+                addFriendObservables.push(friendFriendRef$);
+              });
+            }
+
+            return forkJoin(addFriendObservables).pipe(
+              mergeMap(() => {
+                return this.deleteRequest(friendEmail);
+              }),
+              map(() => true)
+            );
           })
-          .catch((error) => {
-            return false;
-          });
-      });
-    });
+        );
+      })
+    );
   }
 
-  deleteRequest(sender: string) {
-    return new Promise((resolve) => {
-      const queryRequest = query(
-        collection(this.firestore, 'requests'),
-        where('sender', '==', sender)
-      );
-      getDocs(queryRequest)
-        .then((snapshot) => {
-          if (!snapshot.empty) {
-            const deletePromises = snapshot.docs.map((doc) =>
-              deleteDoc(doc.ref)
-            );
-
-            Promise.all(deletePromises)
-              .then(() => {
-                resolve(true);
-              })
-              .catch((error) => {
-                resolve(false);
-              });
-          } else {
-            resolve(false);
-          }
-        })
-        .catch((error) => {
-          resolve(false);
-        });
-    });
+  deleteRequest(sender: string): Observable<boolean> {
+    const queryRequest = query(
+      collection(this.firestore, 'requests'),
+      where('sender', '==', sender)
+    );
+    return from(getDocs(queryRequest)).pipe(
+      mergeMap((snapshot) => {
+        if (snapshot.empty) {
+          return of(false);
+        }
+        return from(snapshot.docs).pipe(
+          mergeMap((doc) => from(deleteDoc(doc.ref))),
+          map(() => true)
+        );
+      }),
+      catchError(() => of(false))
+    );
   }
 }

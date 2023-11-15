@@ -54,13 +54,22 @@ export class LoginPageComponent implements OnInit {
   onSubmit() {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-      this.authService.login(email, password).subscribe(() => {
-        this.router.navigate(['/dashboard']);
-        this.toastService.success({
-          detail: 'SUCCESS',
-          summary: 'Login successfully',
-          duration: 3000,
-        });
+      this.authService.login(email, password).subscribe({
+        next: (userCredential) => {
+          this.router.navigate(['/dashboard']);
+          this.toastService.success({
+            detail: 'SUCCESS',
+            summary: 'Login successfully',
+            duration: 3000,
+          });
+        },
+        error: (error) => {
+          this.toastService.error({
+            detail: 'ERROR',
+            summary: 'Login failed',
+            duration: 3000,
+          });
+        },
       });
     }
   }

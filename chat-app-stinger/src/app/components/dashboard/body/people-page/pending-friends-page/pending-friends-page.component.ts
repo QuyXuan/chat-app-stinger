@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NgToastService } from 'ng-angular-popup';
+import { map } from 'rxjs';
 import { PeopleService } from 'src/app/services/people/people.service';
 
 @Component({
@@ -9,34 +10,49 @@ import { PeopleService } from 'src/app/services/people/people.service';
   // styleUrls: ['./pending-friends-page.component.css'],
 })
 export class PendingFriendsPageComponent implements OnInit {
-  allRequests: any;
+  allRequests = this.peopleService.pendingFriendsOfUser.pipe(
+    map((users) => users)
+  );
 
   constructor(
     private peopleService: PeopleService,
     private toastService: NgToastService
   ) {}
-  ngOnInit(): void {
-    this.peopleService.pendingFriendsOfUser.subscribe((users) => {
-      this.allRequests = users;
+  ngOnInit(): void {}
+
+  acceptRequest(email: any) {
+    this.peopleService.acceptRequest(email).subscribe((res) => {
+      if (res) {
+        this.toastService.success({
+          detail: 'SUCCESS',
+          summary: 'Friend request accepted successfully',
+          duration: 5000,
+        });
+      } else {
+        this.toastService.error({
+          detail: 'ERROR',
+          summary: 'Friend request accepted failed',
+          duration: 5000,
+        });
+      }
     });
   }
 
-  acceptRequest(email: string) {
-    this.peopleService.acceptRequest(email);
-    this.toastService.success({
-      detail: 'SUCCESS',
-      summary: 'Friend request accepted',
-      duration: 5000,
-    });
-  }
-
-  deleteRequest(email: string) {
-    this.peopleService.deleteRequest(email).then(() => {
-      this.toastService.success({
-        detail: 'SUCCESS',
-        summary: 'Friend request deleted',
-        duration: 5000,
-      });
+  deleteRequest(email: any) {
+    this.peopleService.deleteRequest(email).subscribe((res) => {
+      if (res) {
+        this.toastService.success({
+          detail: 'SUCCESS',
+          summary: 'Friend request deleted successfully',
+          duration: 5000,
+        });
+      } else {
+        this.toastService.error({
+          detail: 'ERROR',
+          summary: 'Friend request deleted failed',
+          duration: 5000,
+        });
+      }
     });
   }
 }

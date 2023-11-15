@@ -1,25 +1,36 @@
 import { Injectable } from '@angular/core';
+import { Timestamp } from '@angular/fire/firestore';
 import { io } from 'socket.io-client';
 import { DataImage } from 'src/app/components/dashboard/body/chat-page/data-image';
+import { ChatService } from '../chat/chat.service';
+import { TypeMessage } from 'src/app/models/type-message';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SocketService {
-  private fileSocket: any;
+  private tcpSocket: any;
   private currentUserId!: string;
 
-  constructor() {
-    this.fileSocket = io('localhost:4000');
+  constructor(private chatService: ChatService) {
+    this.tcpSocket = io('localhost:4000');
 
     const accessToken = JSON.parse(localStorage.getItem('access_token') ?? '');
     this.currentUserId = accessToken.user.uid;
-    this.fileSocket.emit('login', {
+    this.tcpSocket.emit('login', {
       userId: this.currentUserId,
     });
 
-    this.fileSocket.on('images', (response: any) => {
+    this.tcpSocket.on('images', (response: any) => {
       console.log(response);
+    });
+
+    this.tcpSocket.on('text', (response: any) => {
+      this.chatService.addChatMessage(
+        this.currentUserId,
+        response,
+        TypeMessage.Text
+      );
     });
   }
 
@@ -58,7 +69,7 @@ export class SocketService {
       const chunk = dataImage.base64.slice(start, end);
 
       // Gửi từng phần dữ liệu đến server
-      this.fileSocket.emit('images', {
+      this.tcpSocket.emit('images', {
         fromUser: this.currentUserId,
         toUsers: otherUserIds,
         chatId,
@@ -70,5 +81,14 @@ export class SocketService {
         totalChunks,
       });
     }
+  }
+
+  public sendMessage(chatId: string, message: string) {
+    this.tcpSocket.emit('message', {
+      fromUser: this.currentUserId,
+      chatId: chatId,
+      message: message,
+      lastMessageDate: Timestamp.fromDate(new Date()),
+    });
   }
 }

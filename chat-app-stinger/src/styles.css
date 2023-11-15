@@ -1,3 +1,6 @@
+@import '~@ng-select/ng-select/themes/default.theme.css';
+@import '~@ng-select/ng-select/themes/material.theme.css';
+
 * {
     box-sizing: border-box;
 }
@@ -40,12 +43,13 @@ li {
 }
 
 .badge {
-    font-size: 12px;
+    /* font-size: 12px; */
+    font-size: 8px;
     font-family: Roboto, sans-serif;
     font-weight: 400;
     text-transform: capitalize;
     letter-spacing: .5px;
-    padding: 3px 10px;
+    /* padding: 3px 10px; */
     border-radius: 10px;
     display: inline-flex;
     align-items: center;
@@ -69,4 +73,11 @@ li {
 /* Loại bỏ vùng chọn trên ảnh */
 .ngx-ic-cropper {
     display: none !important;
+}
+
+.ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-value {
+    background: #817c7c !important;
+    box-sizing: border-box !important;
+    border-radius: 5px !important;
+    transform: matrix(1, 0, 0, 1, 0, 0) !important;
 }

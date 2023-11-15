@@ -7,7 +7,16 @@ import {
   updateProfile,
   UserInfo,
 } from '@angular/fire/auth';
-import { concatMap, from, Observable, of, Subject } from 'rxjs';
+import {
+  catchError,
+  concatMap,
+  from,
+  Observable,
+  of,
+  Subject,
+  tap,
+  throwError,
+} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -19,23 +28,34 @@ export class AuthService {
   constructor(private auth: Auth) {}
 
   login(email: string, password: string) {
-    const userCredential = from(
-      signInWithEmailAndPassword(this.auth, email, password)
+    return from(signInWithEmailAndPassword(this.auth, email, password)).pipe(
+      tap((userCredential) => {
+        this.saveAccessToken(JSON.stringify(userCredential));
+      }),
+      catchError((error) => {
+        return throwError(() => error);
+      })
     );
-    userCredential.subscribe((user) => {
-      this.saveAccessToken(JSON.stringify(user));
-    });
-    return userCredential;
   }
 
   signUp(email: string, password: string) {
-    const userCredential = from(
+    return from(
       createUserWithEmailAndPassword(this.auth, email, password)
+    ).pipe(
+      tap((userCredential) => {
+        this.saveAccessToken(JSON.stringify(userCredential));
+      }),
+      catchError((error) => {
+        return throwError(() => error);
+      })
     );
-    userCredential.subscribe((user) => {
-      this.saveAccessToken(JSON.stringify(user));
-    });
-    return userCredential;
+    // const userCredential = from(
+    //   createUserWithEmailAndPassword(this.auth, email, password)
+    // );
+    // userCredential.subscribe((user) => {
+    //   this.saveAccessToken(JSON.stringify(user));
+    // });
+    // return userCredential;
   }
 
   updateProfileData(profileData: Partial<UserInfo>): Observable<any> {

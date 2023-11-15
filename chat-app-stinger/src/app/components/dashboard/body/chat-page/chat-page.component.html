@@ -2,14 +2,26 @@
 <div class="main-chat-content">
   <!-- chat info -->
   <div class="chat-info">
-    <div class="search-box">
-      <fa-icon [icon]="faIcon.faMagnifyingGlass"></fa-icon>
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Search"
-        [formControl]="searchControl"
-      />
+    <div class="search-create d-flex">
+      <div class="search-box">
+        <fa-icon [icon]="faIcon.faMagnifyingGlass"></fa-icon>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search"
+          [formControl]="searchControl"
+        />
+      </div>
+      <div class="create-chat-group">
+        <button
+          class="btn btn-success btn-create-chat"
+          placement="top"
+          ngbTooltip="Create new group chat"
+          (click)="openCreateChatGroupModal()"
+        >
+          <fa-icon [icon]="faIcon.faPlus"></fa-icon>
+        </button>
+      </div>
     </div>
     <ul
       class="chat-main custom-scroll mt-3"
@@ -28,7 +40,7 @@
           </div>
           <div class="details">
             <p class="user-name text-nowrap line-clamp line1">
-              {{ chat.chatName }}
+              {{ chat.chatName ?? chat.groupChatName }}
             </p>
             <p class="content text-nowrap line-clamp line1">
               {{ chat.lastMessage }}
@@ -38,7 +50,7 @@
             <p class="date text-nowrap line-clamp line1">
               {{ chat.lastMessageDate | dateDisplay }}
             </p>
-            <div class="badge badge-primary sm">8</div>
+            <div class="badge badge-primary sm">&nbsp;</div>
           </div>
         </div>
       </li>
@@ -55,7 +67,9 @@
             </div>
           </div>
           <div class="info">
-            <p class="user-name">{{ selectedChat.chatName }}</p>
+            <p class="user-name">
+              {{ selectedChat.chatName ?? selectedChat.groupChatName }}
+            </p>
             <p class="desc">Online - Last seen, 2:02pm</p>
           </div>
         </div>
@@ -66,23 +80,80 @@
           <button class="btn-item">
             <fa-icon [icon]="faIcon.faVideo"></fa-icon>
           </button>
-          <button class="btn-item">
+          <button
+            class="btn-item"
+            [ngbPopover]="popContent"
+            [popoverTitle]="popTitle"
+          >
             <fa-icon [icon]="faIcon.faEllipsisVertical"></fa-icon>
           </button>
+          <ng-template #popTitle>Menu</ng-template>
+          <ng-template #popContent>
+            <ul class="list-opt">
+              <li *ngIf="isGroupChat">
+                <button
+                  type="button"
+                  class="btn btn-light"
+                  (click)="openAddNewMemberModal()"
+                >
+                  <fa-icon [icon]="faIcon.faPlus"></fa-icon>&nbsp;&nbsp;Add
+                  member
+                </button>
+              </li>
+            </ul>
+          </ng-template>
         </div>
       </div>
-      <div class="chat-message custom-scroll d-flex flex-column">
+      <div
+        class="chat-message custom-scroll d-flex flex-column"
+        infiniteScroll
+        [infiniteScrollUpDistance]="2"
+        [infiniteScrollThrottle]="1000"
+        (scrolledUp)="onScrollUpMessage()"
+        [scrollWindow]="false"
+      >
         <ng-container *ngIf="currentUser | async as currentUser">
           <div
+            *ngIf="!loadMessageFinished"
+            class="d-flex justify-content-center"
+          >
+            <div class="spinner-border" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+          <div
             *ngFor="let message of messages | async"
-            class="chat-bubble-container d-flex w-100"
+            class="chat-bubble-container d-flex flex-column w-100"
             [ngClass]="{ sender: message.senderId === currentUser.uid }"
           >
             <div
+              class="avatar-name d-flex justify-content-center align-items-center"
+              [ngClass]="{ sender: message.senderId === currentUser.uid }"
+            >
+              <div class="avatar">
+                <img [src]="message.avatar" alt="avatar" />
+              </div>
+              <p class="name">{{ message.displayName }}</p>
+            </div>
+            <div
+              *ngIf="message.type === 'text'"
               class="chat-bubble text-break"
               [ngClass]="{ sender: message.senderId === currentUser.uid }"
             >
               {{ message.text }}
+              <span
+                class="chat-date text-break"
+                [ngClass]="{ sender: message.senderId === currentUser.uid }"
+              >
+                {{ message.sentDate | dateDisplay }}
+              </span>
+            </div>
+            <div
+              *ngIf="message.type === 'image'"
+              class="chat-bubble text-break"
+              [ngClass]="{ sender: message.senderId === currentUser.uid }"
+            >
+              <img [src]="message.text" class="message-image" alt="image" />
               <span
                 class="chat-date text-break"
                 [ngClass]="{ sender: message.senderId === currentUser.uid }"
@@ -170,3 +241,99 @@
     </ng-template>
   </div>
 </div>
+<!-- create chat group modal -->
+<ng-template #create_chat_group let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-title">Create new group chat</h4>
+    <button
+      type="button"
+      class="btn-close"
+      aria-describedby="modal-title"
+      (click)="modal.dismiss('Cross click')"
+    ></button>
+  </div>
+  <div class="modal-body">
+    <p>
+      <strong>Type the name of the group you want to create</strong>
+    </p>
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon1">Group name</span>
+      <input
+        [(ngModel)]="nameOfNewChatGroup"
+        type="text"
+        class="form-control"
+        aria-describedby="basic-addon1"
+      />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss('cancel click')"
+    >
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="createNewChatGroup(modal)"
+    >
+      Ok
+    </button>
+  </div>
+</ng-template>
+<!-- add member modal -->
+<ng-template #add_member let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-title">Add member to this chat</h4>
+    <button
+      type="button"
+      class="btn-close"
+      aria-describedby="modal-title"
+      (click)="modal.dismiss('Cross click')"
+    ></button>
+  </div>
+  <div class="modal-body">
+    <p>
+      <strong>Select new member you want to add</strong>
+    </p>
+    <form [formGroup]="selectedForm">
+      <ng-select
+        [items]="newMembersOfGroupChat | async"
+        bindLabel="displayName"
+        bindValue="uid"
+        labelForId="state"
+        [multiple]="true"
+        placeholder="Select new members"
+        clearAllText="Clear"
+        formControlName="selectedMemberIds"
+      >
+        <ng-template ng-option-tmp let-item="item" let-index="index">
+          <img
+            [src]="item.photoURL"
+            class="member-photo"
+            *ngIf="item.photoURL"
+          />
+          {{ item.displayName }}
+        </ng-template>
+      </ng-select>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss('cancel click')"
+    >
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="addNewMembersToGroupChat(modal)"
+    >
+      Ok
+    </button>
+  </div>
+</ng-template>
