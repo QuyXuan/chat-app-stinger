@@ -1,0 +1,1 @@
+- Để upload 1 ảnh lên firebase thì tại server ta cần dùng `firebase-admin`

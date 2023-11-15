@@ -6,6 +6,7 @@ import {
   collection,
   collectionData,
   doc,
+  getDoc,
   getDocs,
   orderBy,
   query,
@@ -22,7 +23,7 @@ import { Message } from 'src/app/models/message';
   providedIn: 'root',
 })
 export class ChatService {
-  constructor(private firestore: Firestore, private userService: UserService) {}
+  constructor(private firestore: Firestore, private userService: UserService) { }
 
   get myChats(): Observable<Chat[]> {
     return this.userService.currentUserProfile.pipe(
@@ -118,5 +119,14 @@ export class ChatService {
     const msgRef = collection(this.firestore, 'chats', chatId, 'messages');
     const queryAllMsg = query(msgRef, orderBy('sentDate', 'asc'));
     return collectionData(queryAllMsg) as Observable<Message[]>;
+  }
+
+  async getUserIdsInChat(chatId: string) {
+    const chatRef = doc(this.firestore, 'chats', chatId);
+    const chatDocSnapshot = await getDoc(chatRef);
+    if (chatDocSnapshot.exists()) {
+      return chatDocSnapshot.data()['userIds'];
+    }
+    return [];
   }
 }

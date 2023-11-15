@@ -1,7 +1,8 @@
-const ChatServer = require("./chat-server/chat-server.js");
-const FileServer = require("./file-server/file-server.js");
+const TCPServer = require("./servers/tcp-server.js");
+const FTPServer = require("./servers/ftp-server.js");
 
-const chatServer = new ChatServer();
+const chatServer = new TCPServer();
 chatServer.start(3000);
 
-const fileServer = new FileServer();
+const fileServer = new FTPServer();
+fileServer.start(4000);

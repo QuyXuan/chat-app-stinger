@@ -19,7 +19,8 @@
     height: 8%;
 }
 
-.chat-info .search-box:hover, .chat-info .search-box:focus-within {
+.chat-info .search-box:hover,
+.chat-info .search-box:focus-within {
     box-shadow: 5px 5px 10px 5px rgba(0, 0, 0, 0.5);
 }
 
@@ -99,7 +100,8 @@
     text-overflow: ellipsis;
 }
 
-.date-status .date, .details .content {
+.date-status .date,
+.details .content {
     font-size: 1rem;
     width: 10em;
     line-height: 1.86;
@@ -231,6 +233,7 @@
 }
 
 .chat-message {
+    position: relative;
     height: 75%;
     overflow-y: auto;
 }
@@ -277,43 +280,105 @@
 }
 
 .chat-input {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 15%;
+    align-items: flex-end;
+    margin: 10px 0 5px;
+    padding: 0 15px;
 }
 
-.chat-input .input-info {
+.chat-input .input-content-block {
+    margin: 0 10px -5px;
+    flex-grow: 1;
+    align-self: stretch;
+}
+
+.chat-input .input-content-block .thumbnails {
     display: flex;
-    align-items: center;
-    border-radius: 20px;
-    overflow: hidden;
-    padding: 10px 20px;
-    margin: 0 10px;
-    box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 2px 2px;
-    height: 50%;
-    background: #f4f4f4;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-height: 235px;
+    overflow: auto;
 }
 
 .chat-input .input-content {
-    width: 110%;
+    width: 100%;
+    min-height: 40px;
     border: none;
+    border-radius: 10px;
     outline: none;
     font-size: 17px;
     font-weight: 500;
-    margin-left: 10px;
     background: #f4f4f4;
+    margin-top: 8px;
+    padding: 0 15px;
 }
 
-.chat-input .input-info button {
+.chat-input button {
+    width: 40px;
+    height: 40px;
     border: none;
-    background: #f4f4f4;
+    border-radius: 50%;
+    background-color: #1c9dea26 !important;
+    color: #1c9dea;
 }
 
-.chat-input .input-info .input-icon {
+.chat-input button:hover {
+    background: #1c9dea40 !important;
+}
+
+.chat-input .input-icon {
     font-size: 20px;
 }
 
-.chat-input .input-info .input-icon:is(:last-child) {
-    margin-left: 30px;
+.chat-input button:last-child {
+    margin-left: 10px;
+}
+
+.chat-input .btn-upload .input-icon {
+    margin-left: 0;
+}
+
+/* Dialog upload */
+.upload-dialog {
+    position: absolute;
+    padding: 30px;
+    background-color: #ece9e9;
+    left: 3px;
+    bottom: 52px;
+}
+
+.upload-dialog .upload-types {
+    padding-left: 0;
+}
+
+.upload-dialog .upload-types a {
+    color: #050505;
+}
+
+.upload-dialog .upload-types a:hover {
+    color: #1c9dea;
+}
+
+.upload-dialog .upload-types .type {
+    margin-bottom: 15px;
+}
+
+.upload-dialog .upload-types .type:last-child {
+    margin-bottom: 0;
+}
+
+.upload-dialog .upload-types .type .icon {
+    margin-right: 5px;
+}
+
+.upload-dialog::after {
+    content: "";
+    position: absolute;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid #ece9e9;
+    bottom: -12px;
+    left: 20px;
+    z-index: 1;
 }
