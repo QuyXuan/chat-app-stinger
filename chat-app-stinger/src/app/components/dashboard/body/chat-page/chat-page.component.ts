@@ -136,7 +136,11 @@ export class ChatPageComponent implements OnInit {
     //       });
     //   }
     // });
-    this.socketService.sendImages(this.userIdsInChat, this.selectedChatId, this.images);
+    this.socketService.sendImages(this.selectedChatId, this.images);
+    this.clearInputAfterSending();
+  }
+
+  clearInputAfterSending() {
     this.images = [];
     this.messageControl.setValue('');
   }

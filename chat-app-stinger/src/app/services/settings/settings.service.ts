@@ -3,7 +3,7 @@ import { BehaviorSubject, Observable, from, switchMap } from 'rxjs';
 import firebase from 'firebase/compat/app';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { AngularFireStorage } from '@angular/fire/compat/storage';
+import { DataTransferService } from '../data-transfer/data.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +14,7 @@ export class SettingsService {
   constructor(
     private fireAuth: AngularFireAuth,
     private fireStore: AngularFirestore,
-    private fireStorage: AngularFireStorage
+    private dataTransferService: DataTransferService
   ) {
     this.fireAuth.authState.subscribe((user) => {
       if (user) {
@@ -41,6 +41,8 @@ export class SettingsService {
     const user = this.currentUser.value;
     if (user) {
       const userRef = this.fireStore.collection('users').doc(user.uid);
+      this.dataTransferService.displayName.next(data.displayName ?? user.uid);
+      localStorage.setItem('displayName', data.displayName ?? user.uid);
       return userRef.update(data);
     }
     return Promise.reject('User not authenticated');

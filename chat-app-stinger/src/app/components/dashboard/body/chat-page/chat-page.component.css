@@ -78,6 +78,7 @@
 
 .chat-main .info-item .chat-box .details {
     padding: 12px 50px 13px 75px;
+    flex-grow: 1;
 }
 
 .profile img {
@@ -103,7 +104,6 @@
 .date-status .date,
 .details .content {
     font-size: 1rem;
-    width: 10em;
     line-height: 1.86;
     color: #a9b3bb;
     white-space: nowrap;

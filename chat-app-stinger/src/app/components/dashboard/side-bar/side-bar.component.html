@@ -7,7 +7,7 @@
         class="avatar-img"
       />
     </button>
-    <div class="logo-text" @fadeInOut *ngIf="collapsed">Stinger</div>
+    <div class="logo-text" @fadeInOut *ngIf="collapsed">{{ displayName }}</div>
     <button
       class="btn-collapse"
       @rotate
@@ -76,17 +76,21 @@
         <a
           *ngIf="index !== 0"
           class="sidenav-nav-link"
-          (click)="index == this.sideBarData.length - 1 ? this.logout() : handleClickNavLink(index)"
+          (click)="
+            index == this.sideBarData.length - 1
+              ? this.logout()
+              : handleClickNavLink(index)
+          "
           [routerLink]="
             index == this.sideBarData.length - 1
               ? ''
               : ['/dashboard', { outlets: { body: 'chat' } }]
           "
           [ngClass]="{
-          'is-closed-side-bar': !collapsed,
-          'setting-absolute': index === sideBarData.length - 1,
-          active: index == selectedNavLinkId
-        }"
+            'is-closed-side-bar': !collapsed,
+            'setting-absolute': index === sideBarData.length - 1,
+            active: index == selectedNavLinkId
+          }"
         >
           <fa-icon
             *ngIf="data.icon"

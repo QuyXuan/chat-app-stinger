@@ -5,6 +5,7 @@ import {
   doc,
   docData,
   Firestore,
+  getDoc,
   query,
   setDoc,
   updateDoc,
@@ -17,6 +18,8 @@ import { AuthService } from '../auth/auth.service';
   providedIn: 'root',
 })
 export class UserService {
+  constructor(private firestore: Firestore, private authService: AuthService) { }
+
   get currentUserProfile(): Observable<ProfileUser | null> {
     return this.authService.currentUser.pipe(
       switchMap((user) => {
@@ -34,8 +37,6 @@ export class UserService {
     const queryAll = query(ref);
     return collectionData(queryAll) as Observable<ProfileUser[]>;
   }
-
-  constructor(private firestore: Firestore, private authService: AuthService) {}
 
   addUser(user: ProfileUser): Observable<any> {
     const ref = doc(this.firestore, 'users', user?.uid);

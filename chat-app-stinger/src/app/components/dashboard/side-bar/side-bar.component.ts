@@ -50,6 +50,8 @@ interface SideNavToggle {
   ],
 })
 export class SideBarComponent implements OnInit {
+  displayName!: string;
+
   // Mặc định mới vào sẽ active menu item Chat
   selectedNavLinkId: number = 1;
 
@@ -83,9 +85,15 @@ export class SideBarComponent implements OnInit {
     private router: Router,
     private dataTransferService: DataTransferService
   ) { }
+
   ngOnInit(): void {
     this.screenWidth = window.innerWidth;
     this.toggleCollapse();
+
+    this.displayName = localStorage.getItem('displayName') ?? 'Stinger';
+    this.dataTransferService.displayName.subscribe((displayName: string) => {
+      this.displayName = displayName;
+    });
 
     this.dataTransferService.selectedNavLink.subscribe((data: SelectedItem) => {
       this.selectedNavLinkId = data.id;

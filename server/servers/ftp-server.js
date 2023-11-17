@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
-const firebaseStorage = require('../services/firebase.js');
+const firebaseService = require('../services/firebase.js');
 
 class FTPServer {
     constructor() {

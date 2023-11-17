@@ -7,7 +7,10 @@ import {
   updateProfile,
   UserInfo,
 } from '@angular/fire/auth';
+import { doc, Firestore, getDoc } from '@angular/fire/firestore';
 import { concatMap, from, Observable, of, Subject } from 'rxjs';
+import { Utils } from 'src/app/helpers/utils';
+import { ProfileUser } from 'src/app/models/profile-user';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +19,7 @@ export class AuthService {
   currentUser = authState(this.auth);
   public isNotLoggedInSubject = new Subject<boolean>();
 
-  constructor(private auth: Auth) {}
+  constructor(private firestore: Firestore, private auth: Auth) { }
 
   login(email: string, password: string) {
     const userCredential = from(
@@ -36,6 +39,25 @@ export class AuthService {
       this.saveAccessToken(JSON.stringify(user));
     });
     return userCredential;
+  }
+
+  getCurrentUserProfile() {
+    const userRef = doc(this.firestore, 'users', Utils.getUserId());
+    return getDoc(userRef)
+      .then((userDoc) => {
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          console.log(userData);
+          const result: ProfileUser = {
+            uid: userData['uid'],
+            email: userData['email'],
+            displayName: userData['displayName'],
+            photoURL: userData['photoURL']
+          };
+          return result;
+        }
+        return null;
+      });
   }
 
   updateProfileData(profileData: Partial<UserInfo>): Observable<any> {

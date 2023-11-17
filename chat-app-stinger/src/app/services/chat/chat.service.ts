@@ -36,7 +36,7 @@ export class ChatService {
           map((chats: any) =>
             this.addChatNameAndAvatar(currentUser?.uid, chats)
           )
-        ) as Observable<Chat[]>;
+        );
       })
     );
   }

@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
-const firebaseStorage = require('../services/firebase.js');
+const firebaseService = require('../services/firebase.js');
 
 class TCPServer {
     constructor() {
@@ -44,22 +44,23 @@ class TCPServer {
 
 
         this.io.on('connection', (socket) => {
-            this.socketDataMap.set(socket.id, {});
             let currentUserId = '';
 
             // Dùng 1 mảng lưu lại các ảnh mà user này đã upload, mục đích lưu cả danh sách này vào 1 collection trong 1 message mới
             let uploadImages = [];
 
-            console.log('Client đã kết nối');
-
             socket.on('login', (data) => {
-                console.log(data.userId, socket.id);
+                console.log(socket.id);
+                // console.log(`Client ${data.userId} đã kết nối`);
                 currentUserId = data.userId;
-                this.users.set(data.userId, socket);
+                this.users.set(currentUserId, socket);
+                // if (!this.users.has(currentUserId)) {
+                // }
+                this.socketDataMap.set(currentUserId, {});
             });
 
             socket.on('images', (data) => {
-                this.combineChunksOfImage(socket, data, uploadImages);
+                this.combineChunksOfImage(currentUserId, data, uploadImages);
             })
 
             socket.on('disconnect', () => {
@@ -74,8 +75,8 @@ class TCPServer {
      * @param socket: socket của user đang kết nối 
      * @param data:  id, chunkIndex, chunk, totalChunk
      */
-    combineChunksOfImage(socket, data, uploadImages) {
-        const socketData = this.socketDataMap.get(socket.id);
+    combineChunksOfImage(currentUserId, data, uploadImages) {
+        const socketData = this.socketDataMap.get(currentUserId);
         if (!socketData[data.imageId]) {
             socketData[data.imageId] = {};
         }
@@ -87,35 +88,45 @@ class TCPServer {
             // Khi đã nhận đã số chunk đã chia nhỏ của file thì tiến hành gộp lại
             const completeBase64Data = Object.values(socketData[data.imageId]).join('');
             delete socketData[data.imageId];
-            this.saveDataIntoDB(data.fromUser, data.chatId, data.imageId, data.fileName, completeBase64Data, uploadImages, data.imageCount)
+            this.saveImagesIntoDB(currentUserId, data.chatId, data.imageId, data.fileName, completeBase64Data, uploadImages, data.imageCount)
         }
     }
 
-    saveDataIntoDB(fromUserId, chatId, imageId, fileName, base64Data, uploadImages, imageCount) {
+    saveImagesIntoDB(fromUserId, chatId, imageId, fileName, base64Data, uploadImages, imageCount) {
         const fileNameInFirebase = `${new Date().getTime()}_${chatId}_${imageId}_${fileName}`;
-        firebaseStorage.saveBase64ToImageFolder(base64Data, fileNameInFirebase)
+        firebaseService.saveBase64ToImageFolder(base64Data, fileNameInFirebase)
             .then((imageURL) => {
                 uploadImages.push(imageURL);
                 if (uploadImages.length === imageCount) {
-                    firebaseStorage.saveImagesIntoDB(chatId, fromUserId, uploadImages)
+                    firebaseService.saveImagesIntoDB(chatId, fromUserId, uploadImages)
                         .then(() => {
-                            this.sendDataToChatRoom(chatId, uploadImages);
+                            this.sendDataToChatRoom(fromUserId, chatId, {
+                                content: uploadImages,
+                                type: 'images'
+                            });
                         });
                 }
             });
     }
 
-    sendDataToChatRoom(chatId, uploadImages) {
-        firebaseStorage.getUsersInChatRoom(chatId)
+    sendDataToChatRoom(fromUserId, chatId, data) {
+        firebaseService.getUsersInChatRoom(chatId)
             .then((userIds) => {
-                console.log('Nội dung gửi: ', uploadImages);
-                console.log('Các user trong room:');
-                userIds.forEach((userId) => {
+                const promises = userIds.map((userId) => {
                     const socket = this.users.get(userId);
-                    socket.emit('images', uploadImages);
+                    if (socket) {
+                        socket.emit(data.type, data.content);
+                        return Promise.resolve();
+                    } else {
+                        return firebaseService.saveDataInNotification(fromUserId, userId, chatId, data);
+                    }
                 });
 
-                // Xoá danh sách ảnh đã upload ngay sau khi gửi xong để sẵn sàng nhận cho
+                // Chờ cho tất cả các Promises hoàn thành trước khi tiếp tục
+                return Promise.all(promises);
+            })
+            .then(() => {
+                const uploadImages = data.content;
                 uploadImages.splice(0, uploadImages.length);
             });
     }

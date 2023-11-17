@@ -1,7 +1,6 @@
 const admin = require('firebase-admin');
 const serviceAccount = require('../firebase-admin-key.json');
 const storageBucketName = 'chatappstinger.appspot.com';
-const { getStorage, ref } = require ('firebase-admin/storage');
 
 class FirebaseService {
     constructor() {
@@ -11,6 +10,13 @@ class FirebaseService {
         });
 
         this.bucket = admin.storage().bucket();
+    }
+
+    async getUserDoc(userId) {
+        const db = admin.firestore();
+        const userRef = db.collection('users').doc(userId);
+        const userDoc = await userRef.get();
+        return userDoc;
     }
 
     async saveBase64ToImageFolder(base64Data, fileName) {
@@ -38,8 +44,7 @@ class FirebaseService {
 
     async saveImagesIntoDB(chatId, fromUserId, uploadImages) {
         const db = admin.firestore();
-        const userRef = db.collection('users').doc(fromUserId);
-        const userDoc = await userRef.get();
+        const userDoc = await this.getUserDoc(fromUserId);
         if (userDoc.exists) {
             const chatRef = db.collection('chats').doc(chatId);
             const messageCollection = chatRef.collection('messages');
@@ -54,6 +59,26 @@ class FirebaseService {
                 avatar: userDoc.data()['photoURL'],
                 images: uploadImages,
                 type: 'image'
+            });
+        }
+    }
+
+    async saveDataInNotification(fromUserId, toUserId, chatId, data) {
+        const db = admin.firestore();
+        const userDoc = await this.getUserDoc(fromUserId);
+
+        if (userDoc.exists) {
+            let content = data.content;
+            if (data.type === 'images') {
+                content = `${userDoc.data()['displayName']} đã gửi ${data.content.length} ảnh`;
+            }
+            await db.collection('notifications').add({
+                senderId: fromUserId,
+                senderAvatar: userDoc.data()['photoURL'],
+                receiverId: toUserId,
+                chatId: chatId,
+                content: content,
+                type: data.type
             });
         }
     }

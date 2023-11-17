@@ -10,6 +10,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { Router } from '@angular/router';
 import { NgToastService } from 'ng-angular-popup';
+import { DataTransferService } from 'src/app/services/data-transfer/data.service';
 
 @Component({
   selector: 'app-login-page',
@@ -42,8 +43,9 @@ export class LoginPageComponent implements OnInit {
     private authService: AuthService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private toastService: NgToastService
-  ) {}
+    private toastService: NgToastService,
+    private dataTransferService: DataTransferService
+  ) { }
 
   passToggle() {
     this.isText = !this.isText;
@@ -55,12 +57,19 @@ export class LoginPageComponent implements OnInit {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
       this.authService.login(email, password).subscribe(() => {
-        this.router.navigate(['/dashboard']);
-        this.toastService.success({
-          detail: 'SUCCESS',
-          summary: 'Login successfully',
-          duration: 3000,
-        });
+        this.authService.getCurrentUserProfile()
+          .then((userProfile) => {
+            if (userProfile !== null) {
+              localStorage.setItem('displayName', userProfile.displayName ?? userProfile.uid);
+              this.dataTransferService.displayName.next(userProfile.displayName ?? userProfile.uid);
+            }
+            this.router.navigate(['/dashboard']);
+            this.toastService.success({
+              detail: 'SUCCESS',
+              summary: 'Login successfully',
+              duration: 3000,
+            });
+          });
       });
     }
   }
