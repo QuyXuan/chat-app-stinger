@@ -149,11 +149,54 @@
               </span>
             </div>
             <div
+              *ngIf="message.type === 'link'"
+              class="chat-bubble text-break"
+              [ngClass]="{ sender: message.senderId === currentUser.uid }"
+            >
+              <a
+                href="{{ message.text }}"
+                class="text-decoration-underline"
+                [ngClass]="
+                  message.senderId === currentUser.uid
+                    ? 'text-white'
+                    : 'text-dark'
+                "
+                target="_blank"
+                rel="noopener noreferrer"
+                >{{ message.text }}</a
+              >
+              <span
+                class="chat-date text-break"
+                [ngClass]="{ sender: message.senderId === currentUser.uid }"
+              >
+                {{ message.sentDate | dateDisplay }}
+              </span>
+            </div>
+            <div
               *ngIf="message.type === 'image'"
               class="chat-bubble text-break"
               [ngClass]="{ sender: message.senderId === currentUser.uid }"
             >
               <img [src]="message.text" class="message-image" alt="image" />
+              <span
+                class="chat-date text-break"
+                [ngClass]="{ sender: message.senderId === currentUser.uid }"
+              >
+                {{ message.sentDate | dateDisplay }}
+              </span>
+            </div>
+            <div
+              *ngIf="message.type === 'audio'"
+              class="chat-bubble text-break"
+              [ngClass]="{ sender: message.senderId === currentUser.uid }"
+            >
+              <div class="w-100">
+                <audio
+                  *ngIf="message.text !== ''"
+                  [src]="message.text"
+                  controls
+                ></audio>
+              </div>
               <span
                 class="chat-date text-break"
                 [ngClass]="{ sender: message.senderId === currentUser.uid }"
@@ -226,7 +269,7 @@
             />
           </div>
         </div>
-        <button>
+        <button (click)="openAudioRecorderModal()">
           <fa-icon [icon]="faIcon.faRecord" class="input-icon"></fa-icon>
         </button>
         <button (click)="sendMessage()">
@@ -334,6 +377,57 @@
       (click)="addNewMembersToGroupChat(modal)"
     >
       Ok
+    </button>
+  </div>
+</ng-template>
+<!-- record modal -->
+<ng-template #audio_recorder let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-title">Record your voice</h4>
+    <button
+      type="button"
+      class="btn-close"
+      aria-describedby="modal-title"
+      (click)="modal.dismiss('Cross click')"
+    ></button>
+  </div>
+  <div class="modal-body">
+    <div class="record-container text-center">
+      <div class="record d-inline-block">
+        <button class="btn btn-light" (click)="toggleRecording()">
+          <fa-icon [icon]="faIcon.faRecord"></fa-icon>
+        </button>
+        <div class="record-content mt-10">
+          <p class="record-title">Record your voice</p>
+          <p class="record-desc">Toggle to record</p>
+          <audio
+            class="w-100"
+            *ngIf="audioURL !== ''"
+            [src]="audioURL"
+            controls
+          ></audio>
+        </div>
+      </div>
+      <div class="record-time">
+        <p class="record-time-title">Recording time</p>
+        <p class="record-time-content">{{ recordingTime }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss('cancel click')"
+    >
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="sendAudioRecord(modal)"
+    >
+      Send audio
     </button>
   </div>
 </ng-template>

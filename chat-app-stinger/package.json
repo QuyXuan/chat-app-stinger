@@ -33,12 +33,12 @@
     "@popperjs/core": "^2.11.6",
     "bootstrap": "^5.2.3",
     "electron": "^27.0.3",
-    "ng-angular-popup": "^0.4.7",
     "ngx-image-cropper": "^7.1.2",
     "ngx-infinite-scroll": "^16.0.0",
     "rxfire": "^6.0.3",
     "rxjs": "~7.8.0",
     "socket.io-client": "^4.7.2",
+    "sweetalert2": "^11.10.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.13.0"
   },

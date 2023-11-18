@@ -6,16 +6,16 @@ import {
   HttpInterceptor,
   HttpErrorResponse,
 } from '@angular/common/http';
-import { Observable, catchError, throwError, switchMap } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth/auth.service';
-import { NgToastService } from 'ng-angular-popup';
 import { Router } from '@angular/router';
+import { ToastService } from '../services/toast/toast.service';
 
 @Injectable()
 export class TokenInterceptor implements HttpInterceptor {
   constructor(
     private authService: AuthService,
-    private toastService: NgToastService,
+    private toastService: ToastService,
     private router: Router
   ) {}
 
@@ -59,11 +59,7 @@ export class TokenInterceptor implements HttpInterceptor {
       return next.handle(req);
     } else {
       return throwError(() => {
-        this.toastService.warning({
-          detail: 'WARNING',
-          summary: 'Login Session Expire',
-          duration: 5000,
-        });
+        this.toastService.showWarning('Login Session Expire');
         this.router.navigate(['login']);
       });
     }

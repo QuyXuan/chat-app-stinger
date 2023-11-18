@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
-import { NgToastService } from 'ng-angular-popup';
 import { combineLatest, map, startWith } from 'rxjs';
 import { PeopleService } from 'src/app/services/people/people.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-new-friends-page',
@@ -29,23 +29,15 @@ export class NewFriendsPageComponent implements OnInit {
   ngOnInit(): void {}
   constructor(
     private peopleService: PeopleService,
-    private toastService: NgToastService
+    private toastService: ToastService
   ) {}
 
   addFriend(receiver: string) {
     this.peopleService.sendFriendRequest(receiver).subscribe((res) => {
       if (res) {
-        this.toastService.success({
-          detail: 'SUCCESS',
-          summary: 'Friend request sent',
-          duration: 5000,
-        });
+        this.toastService.showSuccess('Friend request sent');
       } else {
-        this.toastService.error({
-          detail: 'ERROR',
-          summary: 'Friend request sent',
-          duration: 5000,
-        });
+        this.toastService.showError('Friend request sent');
       }
     });
   }

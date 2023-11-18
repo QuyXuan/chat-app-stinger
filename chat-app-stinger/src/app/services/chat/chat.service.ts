@@ -36,8 +36,8 @@ export class ChatService {
       concatMap((currentUser) => {
         const queryChat = query(
           collection(this.firestore, 'chats'),
-          where('userIds', 'array-contains', currentUser?.uid)
-          // orderBy('lastMessageDate', 'desc')
+          where('userIds', 'array-contains', currentUser?.uid),
+          orderBy('lastMessageDate', 'desc')
         );
         return collectionData(queryChat, { idField: 'id' }).pipe(
           map((chats: any) =>
@@ -155,7 +155,7 @@ export class ChatService {
       ),
       concatMap(() =>
         updateDoc(chatRef, {
-          lastMessage: type === TypeMessage.Text ? message : 'file.xyz',
+          lastMessage: type === TypeMessage.Text ? message : `${type}.xyz`,
           lastMessageDate: today,
         })
       )

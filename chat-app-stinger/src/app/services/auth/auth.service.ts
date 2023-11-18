@@ -49,13 +49,6 @@ export class AuthService {
         return throwError(() => error);
       })
     );
-    // const userCredential = from(
-    //   createUserWithEmailAndPassword(this.auth, email, password)
-    // );
-    // userCredential.subscribe((user) => {
-    //   this.saveAccessToken(JSON.stringify(user));
-    // });
-    // return userCredential;
   }
 
   updateProfileData(profileData: Partial<UserInfo>): Observable<any> {

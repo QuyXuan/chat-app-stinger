@@ -292,13 +292,12 @@
     margin-bottom: 16px;
     margin-left: 20px;
     border-radius: 8px;
-    width: fit-content;
     max-width: 60%;
 }
 
 .chat-bubble.sender {
     color: #ffffff;
-    background: #0a7cff;
+    background: #606060;
 }
 
 .chat-message .chat-date {
@@ -454,4 +453,60 @@
     height: 100%;
     object-fit: cover;
     border-radius: 8px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modal-fade-in .modal-content {
+    animation-name: fadeIn;
+    animation-duration: 0.5s;
+}
+
+.modal-body {
+    background: #fff;
+    padding: 20px;
+}
+
+.record {
+    padding: 10px;
+    background: #d1d1d1;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    width: 60%;
+}
+
+.record-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.record-desc {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.record-time {
+    background: #d1d1d1;
+    padding: 10px 0;
+    border-radius: 10px;
+}
+
+.record-time-title {
+    font-size: 0.8em;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.record-time-content {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #333;
 }

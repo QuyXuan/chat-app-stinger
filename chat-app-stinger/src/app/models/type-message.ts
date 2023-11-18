@@ -4,4 +4,5 @@ export enum TypeMessage {
   Video = 'video',
   Audio = 'audio',
   File = 'file',
+  Link = 'link',
 }

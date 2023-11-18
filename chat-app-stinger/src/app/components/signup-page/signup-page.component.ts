@@ -8,10 +8,10 @@ import {
   faLock,
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
-import { NgToastService } from 'ng-angular-popup';
 import { switchMap } from 'rxjs';
 import { constants } from 'src/app/constants';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 import { UserService } from 'src/app/services/user/user.service';
 
 @Component({
@@ -53,7 +53,7 @@ export class SignupPageComponent implements OnInit {
     private authService: AuthService,
     private userService: UserService,
     private formBuilder: FormBuilder,
-    private toastService: NgToastService,
+    private toastService: ToastService,
     private router: Router
   ) {}
 
@@ -81,18 +81,10 @@ export class SignupPageComponent implements OnInit {
         .subscribe({
           next: (userCredential) => {
             this.router.navigate(['/dashboard']);
-            this.toastService.success({
-              detail: 'SUCCESS',
-              summary: 'Signup successfully',
-              duration: 3000,
-            });
+            this.toastService.showSuccess('Signup successfully');
           },
           error: (error) => {
-            this.toastService.error({
-              detail: 'ERROR',
-              summary: 'Signup failed',
-              duration: 3000,
-            });
+            this.toastService.showError('Signup failed');
           },
         });
     }

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Timestamp } from '@angular/fire/firestore';
 import { io } from 'socket.io-client';
 import { DataImage } from 'src/app/components/dashboard/body/chat-page/data-image';
 import { ChatService } from '../chat/chat.service';
 import { TypeMessage } from 'src/app/models/type-message';
+import { UserService } from '../user/user.service';
+import { AudioService } from '../audio/audio.service';
 
 @Injectable({
   providedIn: 'root',
@@ -12,8 +13,12 @@ export class SocketService {
   private tcpSocket: any;
   private currentUserId!: string;
 
-  constructor(private chatService: ChatService) {
-    this.tcpSocket = io('localhost:4000');
+  constructor(
+    private chatService: ChatService,
+    private userService: UserService,
+    private audioService: AudioService
+  ) {
+    this.tcpSocket = io('localhost:3000');
 
     const accessToken = JSON.parse(localStorage.getItem('access_token') ?? '');
     this.currentUserId = accessToken.user.uid;
@@ -26,11 +31,17 @@ export class SocketService {
     });
 
     this.tcpSocket.on('text', (response: any) => {
-      this.chatService.addChatMessage(
-        this.currentUserId,
-        response,
-        TypeMessage.Text
-      );
+      this.chatService
+        .addChatMessage(response.chatId, response.text, response.type)
+        .subscribe();
+    });
+
+    this.tcpSocket.on('addToGroupChat', (response: any) => {
+      this.userService.getUsersById(response.newUserIds).subscribe((users) => {
+        this.chatService
+          .addMemberToGroupChat(users, response.chatId)
+          .subscribe();
+      });
     });
   }
 
@@ -83,12 +94,39 @@ export class SocketService {
     }
   }
 
-  public sendMessage(chatId: string, message: string) {
-    this.tcpSocket.emit('message', {
+  public sendMessage(chatId: string, text: string, type: TypeMessage) {
+    this.tcpSocket.emit('text', {
       fromUser: this.currentUserId,
       chatId: chatId,
-      message: message,
-      lastMessageDate: Timestamp.fromDate(new Date()),
+      text: text,
+      type: type,
     });
+  }
+
+  public addToGroupChat(newUserIds: string[], chatId: string) {
+    this.tcpSocket.emit('addToGroupChat', {
+      fromUser: this.currentUserId,
+      newUserIds: newUserIds,
+      chatId: chatId,
+    });
+  }
+
+  public sendAudio(chatId: string, audioBlob: Blob) {
+    const CHUNK_SIZE = 1024 * 1024;
+    const totalBytes = audioBlob.size;
+    const totalChunks = Math.ceil(totalBytes / CHUNK_SIZE);
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+      const start = chunkIndex * CHUNK_SIZE;
+      const end = Math.min((chunkIndex + 1) * CHUNK_SIZE, totalBytes);
+      const chunk = audioBlob.slice(start, end);
+
+      this.tcpSocket.emit('audio', {
+        fromUser: this.currentUserId,
+        chatId: chatId,
+        chunkIndex: chunkIndex,
+        chunk: chunk,
+        totalChunks: totalChunks,
+      });
+    }
   }
 }

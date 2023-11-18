@@ -31,7 +31,6 @@ import { getAuth, provideAuth } from '@angular/fire/auth';
 // Module dependencies
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgToastModule } from 'ng-angular-popup';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DateDisplayPipe } from './pipes/date-display/date-display.pipe';
@@ -70,7 +69,6 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
     AngularFireStorageModule,
     FormsModule,
     ReactiveFormsModule,
-    NgToastModule,
     NgbModule,
     FontAwesomeModule,
     BrowserAnimationsModule,

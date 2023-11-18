@@ -11,7 +11,9 @@ export class ModalService {
 
   open(content: any) {
     return this.modalService
-      .open(content, { ariaLabelledBy: 'modal-basic-title' })
+      .open(content, {
+        ariaLabelledBy: 'modal-basic-title',
+      })
       .result.then(
         (result) => {
           return (this.closeResult = `Close with: ${result}`);

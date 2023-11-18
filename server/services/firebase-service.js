@@ -1,7 +1,6 @@
 const admin = require('firebase-admin');
 const serviceAccount = require('../firebase-admin-key.json');
 const storageBucketName = 'chatappstinger.appspot.com';
-const { getStorage, ref } = require('firebase-admin/storage');
 
 class FirebaseService {
     constructor() {
@@ -34,6 +33,45 @@ class FirebaseService {
         });
 
         return url;
+    }
+
+    async saveBufferToAudioFolder(bufferData, fileName) {
+        const file = this.bucket.file(`audios/${fileName}`);
+        await file.save(bufferData, {
+            metadata: {
+                content: 'audio/ogg'
+            }
+        });
+        const [url] = await file.getSignedUrl({
+            action: 'read',
+            expires: '01-01-2100'
+        });
+        return url;
+    }
+
+    async saveAudioIntoDB(chatId, fromUserId, audioURL) {
+        const db = admin.firestore();
+        const userRef = db.collection('users').doc(fromUserId);
+        const userDoc = await userRef.get();
+        if (userDoc.exists) {
+            const chatRef = db.collection('chats').doc(chatId);
+            const messageCollection = chatRef.collection('messages');
+            const today = admin.firestore.FieldValue.serverTimestamp();
+
+            await chatRef.update({
+                lastMessage: `audio.xyz`,
+                lastMessageDate: today
+            });
+
+            await messageCollection.add({
+                senderId: fromUserId,
+                displayName: userDoc.data()['displayName'],
+                sentDate: today,
+                avatar: userDoc.data()['photoURL'],
+                text: audioURL,
+                type: 'audio'
+            });
+        }
     }
 
     async saveImagesIntoDB(chatId, fromUserId, uploadImages) {
