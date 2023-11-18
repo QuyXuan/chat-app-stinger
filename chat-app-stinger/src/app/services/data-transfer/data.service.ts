@@ -11,6 +11,7 @@ export class DataTransferService {
   // Observables
   selectedNavLink = new Subject<SelectedItem>();
   displayName = new Subject<string>();
+  newNotifications = new Subject<number>();
 
   updateSelectedNavLinkId(data: SelectedItem) {
     if (data.id == -1) {

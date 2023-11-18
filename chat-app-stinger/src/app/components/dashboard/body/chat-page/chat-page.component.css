@@ -311,7 +311,7 @@
     font-weight: 500;
     background: #f4f4f4;
     margin-top: 8px;
-    padding: 0 15px;
+    padding: 7px 15px 0;
 }
 
 .chat-input button {

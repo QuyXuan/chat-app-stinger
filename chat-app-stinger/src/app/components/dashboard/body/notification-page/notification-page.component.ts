@@ -1,15 +1,18 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { faClose, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { constants } from 'src/app/constants';
 import { DataTransferService } from 'src/app/services/data-transfer/data.service';
 import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
+import { NotificationData } from 'src/app/services/notification/notification-data';
+import { NotificationService } from 'src/app/services/notification/notification.service';
 
 @Component({
   selector: 'app-notification-page',
   templateUrl: './notification-page.component.html',
   styleUrls: ['./notification-page.component.css']
 })
-export class NotificationPageComponent {
+export class NotificationPageComponent implements OnInit {
+  notifications!: NotificationData[];
   @Output() onBtnCloseClick = new EventEmitter<{ id: number, name: string }>();
 
   faIcon = {
@@ -18,7 +21,23 @@ export class NotificationPageComponent {
     faClose: faClose
   }
 
-  constructor(private dataTransferService: DataTransferService) { }
+  constructor(private dataTransferService: DataTransferService,
+    private notificationService: NotificationService) { }
+
+  ngOnInit(): void {
+    this.notificationService.getNotifications()
+      .then((notifications) => {
+        console.log(notifications);
+        this.notifications = notifications;
+        if (this.notifications.length > 0) {
+          // Có thể sau này phát triển hiển thị số notification chưa xem
+          const newNotificationsCount = this.notifications.reduce((count: number, notification) => {
+            return count + (notification.isSeen ? 0 : 1);
+          }, 0);
+          this.dataTransferService.newNotifications.next(newNotificationsCount);
+        }
+      });
+  }
 
   handleBtnCloseClick() {
     this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(constants.PREVIOUS_NAV_LINK_ID, 'Chats'));

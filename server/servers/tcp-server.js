@@ -50,12 +50,9 @@ class TCPServer {
             let uploadImages = [];
 
             socket.on('login', (data) => {
-                console.log(socket.id);
-                // console.log(`Client ${data.userId} đã kết nối`);
+                console.log('User login', data.userId);
                 currentUserId = data.userId;
                 this.users.set(currentUserId, socket);
-                // if (!this.users.has(currentUserId)) {
-                // }
                 this.socketDataMap.set(currentUserId, {});
             });
 
@@ -88,19 +85,20 @@ class TCPServer {
             // Khi đã nhận đã số chunk đã chia nhỏ của file thì tiến hành gộp lại
             const completeBase64Data = Object.values(socketData[data.imageId]).join('');
             delete socketData[data.imageId];
-            this.saveImagesIntoDB(currentUserId, data.chatId, data.imageId, data.fileName, completeBase64Data, uploadImages, data.imageCount)
+            // this.saveImagesIntoDB(currentUserId, data.chatId, data.imageId, data.fileName, completeBase64Data, uploadImages, data.imageCount)
+            this.saveImagesIntoDB(currentUserId, data, completeBase64Data, uploadImages);
         }
     }
 
-    saveImagesIntoDB(fromUserId, chatId, imageId, fileName, base64Data, uploadImages, imageCount) {
-        const fileNameInFirebase = `${new Date().getTime()}_${chatId}_${imageId}_${fileName}`;
+    saveImagesIntoDB(fromUserId, dataFromClient, base64Data, uploadImages) {
+        const fileNameInFirebase = `${new Date().getTime()}_${dataFromClient.chatId}_${dataFromClient.imageId}_${dataFromClient.fileName}`;
         firebaseService.saveBase64ToImageFolder(base64Data, fileNameInFirebase)
             .then((imageURL) => {
                 uploadImages.push(imageURL);
-                if (uploadImages.length === imageCount) {
-                    firebaseService.saveImagesIntoDB(chatId, fromUserId, uploadImages)
+                if (uploadImages.length === dataFromClient.imageCount) {
+                    firebaseService.saveImagesIntoDB(dataFromClient.chatId, fromUserId, dataFromClient.sendAt, uploadImages)
                         .then(() => {
-                            this.sendDataToChatRoom(fromUserId, chatId, {
+                            this.sendDataToChatRoom(fromUserId, dataFromClient.chatId, dataFromClient.sendAt, {
                                 content: uploadImages,
                                 type: 'images'
                             });
@@ -109,16 +107,16 @@ class TCPServer {
             });
     }
 
-    sendDataToChatRoom(fromUserId, chatId, data) {
+    sendDataToChatRoom(fromUserId, chatId, sendAt, data) {
         firebaseService.getUsersInChatRoom(chatId)
             .then((userIds) => {
-                const promises = userIds.map((userId) => {
-                    const socket = this.users.get(userId);
+                const promises = userIds.map((toUserId) => {
+                    const socket = this.users.get(toUserId);
                     if (socket) {
                         socket.emit(data.type, data.content);
                         return Promise.resolve();
                     } else {
-                        return firebaseService.saveDataInNotification(fromUserId, userId, chatId, data);
+                        return firebaseService.saveDataInNotification(fromUserId, toUserId, chatId, sendAt, data);
                     }
                 });
 

@@ -42,7 +42,7 @@ class FirebaseService {
         return url;
     }
 
-    async saveImagesIntoDB(chatId, fromUserId, uploadImages) {
+    async saveImagesIntoDB(chatId, fromUserId, sendAt, uploadImages) {
         const db = admin.firestore();
         const userDoc = await this.getUserDoc(fromUserId);
         if (userDoc.exists) {
@@ -58,27 +58,35 @@ class FirebaseService {
                 displayName: userDoc.data()['displayName'],
                 avatar: userDoc.data()['photoURL'],
                 images: uploadImages,
-                type: 'image'
+                type: 'image',
+                sendAt: new Date(sendAt),
+                receiveAt: new Date()
             });
         }
     }
 
-    async saveDataInNotification(fromUserId, toUserId, chatId, data) {
+    async saveDataInNotification(fromUserId, toUserId, chatId, sendAt, data) {
         const db = admin.firestore();
         const userDoc = await this.getUserDoc(fromUserId);
 
         if (userDoc.exists) {
+            const chatRef = db.collection('chats').doc(chatId);
+            const groupChatName = (await chatRef.get()).data()['groupChatName'] ?? '';
             let content = data.content;
             if (data.type === 'images') {
                 content = `${userDoc.data()['displayName']} đã gửi ${data.content.length} ảnh`;
             }
             await db.collection('notifications').add({
                 senderId: fromUserId,
+                senderName: userDoc.data()['displayName'],
                 senderAvatar: userDoc.data()['photoURL'],
                 receiverId: toUserId,
-                chatId: chatId,
-                content: content,
-                type: data.type
+                chatId,
+                groupChatName,
+                content,
+                type: data.type,
+                sendAt: new Date(sendAt),
+                receiveAt: new Date()
             });
         }
     }

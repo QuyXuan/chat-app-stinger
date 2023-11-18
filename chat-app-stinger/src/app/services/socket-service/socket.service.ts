@@ -32,6 +32,7 @@ export class SocketService {
    * @param index: index của image trong danh sách các image mà client nhấn gửi
    */
   private sendPartsOfImage(chatId: string, dataImage: DataImage, index: number, imageCount: number) {
+    const now = new Date();
     // Gửi từng chunk có kích thước 1MB qua server
     const chunkSize = 1024 * 1024;
     const totalBytes = dataImage.base64.length;
@@ -46,6 +47,7 @@ export class SocketService {
         chatId,
         imageCount: imageCount,
         fileName: dataImage.fileName,
+        sendAt: now,
         imageId: index,
         chunkIndex,
         chunk,

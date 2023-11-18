@@ -24,6 +24,7 @@ import {
 import { Router } from '@angular/router';
 import { DataTransferService } from 'src/app/services/data-transfer/data.service';
 import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
+import { NotificationService } from 'src/app/services/notification/notification.service';
 
 interface SideNavToggle {
   screenWidth: number;
@@ -54,6 +55,7 @@ export class SideBarComponent implements OnInit {
 
   // Mặc định mới vào sẽ active menu item Chat
   selectedNavLinkId: number = 1;
+  hasNewNotifications: boolean = false;
 
   @Output() onToggleSideNav: EventEmitter<SideNavToggle> = new EventEmitter();
 
@@ -83,7 +85,8 @@ export class SideBarComponent implements OnInit {
     private authService: AuthService,
     private toastService: NgToastService,
     private router: Router,
-    private dataTransferService: DataTransferService
+    private dataTransferService: DataTransferService,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
@@ -97,6 +100,10 @@ export class SideBarComponent implements OnInit {
 
     this.dataTransferService.selectedNavLink.subscribe((data: SelectedItem) => {
       this.selectedNavLinkId = data.id;
+    });
+
+    this.dataTransferService.newNotifications.subscribe((newNotificationsCount) => {
+      this.hasNewNotifications = newNotificationsCount != 0;
     });
 
     if (this.router.url.includes('people')) {
@@ -153,6 +160,10 @@ export class SideBarComponent implements OnInit {
   }
 
   handleClickNavLink(navLinkIndex: number): void {
+    if (this.sideBarData[navLinkIndex].label === 'Notifications') {
+      this.hasNewNotifications = false;
+      this.notificationService.seenNewNotifications();
+    }
     this.selectedNavLinkId = navLinkIndex;
     this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(navLinkIndex, this.sideBarData[navLinkIndex].label))
     this.onClickNavLink.emit(this.sideBarData[navLinkIndex].label);

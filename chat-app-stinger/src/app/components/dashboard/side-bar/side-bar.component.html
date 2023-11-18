@@ -29,7 +29,7 @@
         [ngClass]="getActiveClass(data)"
         [ngClass]="{
           'is-closed-side-bar': !collapsed,
-          active: index == selectedNavLinkId
+          active: index == selectedNavLinkId,
         }"
       >
         <fa-icon
@@ -60,7 +60,8 @@
           'is-closed-side-bar': !collapsed,
           'setting-absolute': index === sideBarData.length - 1,
           'logout-absolute': index === sideBarData.length - 2,
-          active: index == selectedNavLinkId
+          active: index == selectedNavLinkId,
+          ping: data.label == 'Notifications' && hasNewNotifications
         }"
       >
         <fa-icon
