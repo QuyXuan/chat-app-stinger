@@ -1,5 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   faMagnifyingGlass,
@@ -18,13 +18,17 @@ import {
 import { Observable, combineLatest, map, of, startWith } from 'rxjs';
 import { Chat } from 'src/app/models/chat';
 import { Message } from 'src/app/models/message';
+import { TypeMessage } from 'src/app/models/type-message';
 import { ProfileUser } from 'src/app/models/profile-user';
 import { ChatService } from 'src/app/services/chat/chat.service';
 import { DataTransferService } from 'src/app/services/data-transfer/data.service';
 import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 import { SocketService } from 'src/app/services/socket-service/socket.service';
+import { ModalService } from 'src/app/services/modal/modal.service';
 import { UserService } from 'src/app/services/user/user.service';
 import { DataImage } from './data-image';
+import { constants } from 'src/app/constants';
+import { AudioService } from 'src/app/services/audio/audio.service';
 
 @Component({
   selector: 'app-chat-page',
@@ -32,24 +36,28 @@ import { DataImage } from './data-image';
   styleUrls: ['./chat-page.component.css'],
 })
 export class ChatPageComponent implements OnInit {
-  isShowChatSidebar: boolean = true;
-
-  // Kiểm tra xem có đang bấm vào nút để upload
-  isShowUploadDialog: boolean = false;
+  @ViewChild('inputContent') inputContent!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('endOfChat') endOfChat: ElementRef | undefined;
+  @ViewChild('create_chat_group') createChatGroupModal: ElementRef | undefined;
+  @ViewChild('add_member') addMemberModal: ElementRef | undefined;
+  @ViewChild('audio_recorder') audioRecorderModal: ElementRef | undefined;
 
-  // Ô input nhập message
+  isShowChatSidebar: boolean = true;
+  isShowUploadDialog: boolean = false;
   currentRows: number = 1;
   textareaContent: string = '';
-  @ViewChild('inputContent') inputContent!: ElementRef;
+  isRecording = false;
+  recordingTime = '00:00';
+  recordingInterval: any;
+  audioBlob: any;
+  audioURL = '';
 
   // Các images đang chờ được gửi
   images: DataImage[] = [];
 
   userIdsInChat!: string[];
 
-  @ViewChild('endOfChat')
-  endOfChat: ElementRef | undefined;
   faIcon = {
     faMagnifyingGlass: faMagnifyingGlass,
     faCircle: faCircle,
@@ -62,32 +70,55 @@ export class ChatPageComponent implements OnInit {
     faPaperPlane: faPaperPlane,
     faPlus: faPlus,
     faImage: faImage,
-    faRecord: faMicrophone
+    faRecord: faMicrophone,
   };
+
+  selectedForm: FormGroup = new FormGroup({});
   searchControl = new FormControl('');
   messageControl = new FormControl('');
   currentUser = this.userService.currentUserProfile;
   selectedChatId = '';
+  nameOfNewChatGroup = '';
+  isGroupChat = false;
+  messageTake = constants.MESSAGE_TAKE;
+  loadMessageFinished = true;
+
   myChats = combineLatest([
     this.chatService.myChats,
     this.searchControl.valueChanges.pipe(startWith('')),
   ]).pipe(
     map(([chats, searchString]) => {
-      return chats.filter((chat) =>
-        chat.chatName?.toLowerCase().includes(searchString!.toLowerCase())
-      );
+      return chats.filter((chat) => {
+        if (chat.groupChatName !== undefined && chat.groupChatName !== null) {
+          return chat.groupChatName
+            ?.toLowerCase()
+            .includes(searchString!.toLowerCase());
+        }
+        return chat.chatName
+          ?.toLowerCase()
+          .includes(searchString!.toLowerCase());
+      });
     })
   );
+
   selectedChat: Observable<Chat> | undefined;
   messages: Observable<Message[]> | undefined;
+  membersOfGroupChat: Observable<ProfileUser[]> | undefined;
+  newMembersOfGroupChat: Observable<ProfileUser[]> | undefined;
 
   constructor(
     private userService: UserService,
     private chatService: ChatService,
     private router: Router,
     private dataService: DataTransferService,
-    private socketService: SocketService
+    private socketService: SocketService,
+    private modalService: ModalService,
+    private formBuilder: FormBuilder,
+    private audioService: AudioService
   ) {
+    this.selectedForm = this.formBuilder.group({
+      selectedMemberIds: [],
+    });
     const currentNavigation = this.router.getCurrentNavigation();
     if (currentNavigation?.extras?.state) {
       const chatId = currentNavigation.extras.state['chatId'];
@@ -100,13 +131,15 @@ export class ChatPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.dataService.selectedNavLink.subscribe((selectedNavLink: SelectedItem) => {
-      if (selectedNavLink.name != '' && selectedNavLink.name != 'Chats') {
-        this.isShowChatSidebar = false;
-      } else {
-        this.isShowChatSidebar = true;
+    this.dataService.selectedNavLink.subscribe(
+      (selectedNavLink: SelectedItem) => {
+        if (selectedNavLink.name != '' && selectedNavLink.name != 'Chats') {
+          this.isShowChatSidebar = false;
+        } else {
+          this.isShowChatSidebar = true;
+        }
       }
-    });
+    );
   }
 
   createChat(friend: ProfileUser) {
@@ -114,41 +147,71 @@ export class ChatPageComponent implements OnInit {
   }
 
   selectChat(chat: any) {
+    this.isGroupChat = chat?.groupChatName !== undefined;
+    this.messageTake = constants.MESSAGE_TAKE;
+    if (this.isGroupChat) {
+      this.chatService.getMembersOfGroupChat(chat.id).subscribe((users) => {
+        this.membersOfGroupChat = of(users);
+        this.getNewMembersOfGroupChat().subscribe((users) => {
+          this.newMembersOfGroupChat = of(users);
+        });
+      });
+    }
     this.selectedChat = of(chat);
-    this.chatService.getChatMessages(chat.id).subscribe((messages) => {
-      this.messages = of(messages);
-      this.selectedChatId = chat.id;
-      this.getUsersInChat(this.selectedChatId);
-      this.scrollToBottom();
-    });
+    this.chatService
+      .getChatMessages(chat.id, this.messageTake)
+      .subscribe((messages) => {
+        this.messages = of(messages.reverse());
+        this.selectedChatId = chat.id;
+        this.getUsersInChat(this.selectedChatId);
+        this.scrollToBottom();
+      });
   }
 
   sendMessage() {
-    // this.selectedChat?.subscribe((chat) => {
-    //   const message = this.messageControl.value;
-    //   const selectedChatId = chat.id;
-    //   this.messageControl.setValue('');
-    //   if (message && selectedChatId) {
-    //     this.chatService
-    //       .addChatMessage(selectedChatId, message)
-    //       .subscribe(() => {
-    //         this.scrollToBottom();
-    //       });
-    //   }
-    // });
-    this.socketService.sendImages(this.userIdsInChat, this.selectedChatId, this.images);
-    this.images = [];
+    if (
+      this.selectedChatId === '' ||
+      (this.messageControl.value?.trim() === '' && this.images.length === 0)
+    ) {
+      return;
+    }
+    if (this.messageControl.value?.trim() !== '') {
+      if (constants.URL_REGEX.test(this.messageControl.value!)) {
+        this.socketService.sendMessage(
+          this.selectedChatId,
+          this.messageControl.value!,
+          TypeMessage.Link
+        );
+      } else {
+        this.socketService.sendMessage(
+          this.selectedChatId,
+          this.messageControl.value!,
+          TypeMessage.Text
+        );
+      }
+    }
+    if (this.images.length > 0) {
+      this.messageControl.setValue('');
+      this.socketService.sendImages(
+        this.userIdsInChat,
+        this.selectedChatId,
+        this.images
+      );
+      this.images = [];
+    }
+    this.scrollToBottom();
     this.messageControl.setValue('');
   }
 
   getUsersInChat(chatId: string) {
-    this.chatService.getUserIdsInChat(chatId)
+    this.chatService
+      .getUserIdsInChat(chatId)
       .then((userIds) => {
         this.userIdsInChat = userIds;
       })
       .catch((error) => {
         console.log('getUsersInChat: ', error);
-      })
+      });
   }
 
   scrollToBottom() {
@@ -165,8 +228,62 @@ export class ChatPageComponent implements OnInit {
     }
   }
 
+  onScrollUpMessage() {
+    this.loadMessageFinished = false;
+    this.messageTake += constants.MESSAGE_TAKE;
+    this.chatService
+      .getChatMessages(this.selectedChatId!, this.messageTake)
+      .subscribe((messages) => {
+        this.messages = of(messages.reverse());
+        this.loadMessageFinished = true;
+      });
+  }
+
+  getNewMembersOfGroupChat() {
+    return combineLatest([
+      this.membersOfGroupChat!,
+      this.userService.allUser,
+      this.userService.currentUserProfile,
+    ]).pipe(
+      map(([members, allUsers, currentUser]) => {
+        return allUsers.filter(
+          (user) =>
+            !members.find((member) => member.uid === user.uid) &&
+            user.uid !== currentUser?.uid
+        );
+      })
+    );
+  }
+
+  openCreateChatGroupModal() {
+    this.modalService.open(this.createChatGroupModal);
+  }
+
+  createNewChatGroup(modal: any) {
+    if (this.nameOfNewChatGroup.trim() !== '') {
+      this.chatService.createChatGroup(this.nameOfNewChatGroup).subscribe();
+      modal.close('Ok click');
+    }
+  }
+
+  openAddNewMemberModal() {
+    this.modalService.open(this.addMemberModal);
+  }
+
+  addNewMembersToGroupChat(modal: any) {
+    if (this.selectedForm.value.selectedMemberIds.length > 0) {
+      const selectedMemberIds = this.selectedForm.value.selectedMemberIds;
+      this.socketService.addToGroupChat(
+        selectedMemberIds,
+        this.selectedChatId!
+      );
+      this.selectedForm.reset();
+      modal.close('Ok click');
+    }
+  }
+
   /**
-   * Check phím người dùng bấm để xem liệu có nên cho nhập kí tự, xuống hàng hay gửi message 
+   * Check phím người dùng bấm để xem liệu có nên cho nhập kí tự, xuống hàng hay gửi message
    */
   onKeyDown(event: KeyboardEvent) {
     const lines = this.textareaContent.split('\n');
@@ -194,7 +311,7 @@ export class ChatPageComponent implements OnInit {
 
   /**
    * Xử lí sự kiện upload file
-   * @param event 
+   * @param event
    */
   onFileSelected(event: any) {
     this.isShowUploadDialog = !this.isShowUploadDialog;
@@ -206,7 +323,7 @@ export class ChatPageComponent implements OnInit {
         reader.onload = (e: any) => {
           const dataImage: DataImage = {
             fileName: file.name,
-            base64: e.target.result
+            base64: e.target.result,
           };
           this.images.push(dataImage);
         };
@@ -216,9 +333,57 @@ export class ChatPageComponent implements OnInit {
 
   /**
    * Xử lí sự kiện xoá 1 image khi người dùng click vào dấu X trên từng hình
-   * @param index 
+   * @param index
    */
   removeImage(index: number) {
-    this.images = this.images.filter((image, currentIndex) => currentIndex != index);
+    this.images = this.images.filter(
+      (image, currentIndex) => currentIndex != index
+    );
+  }
+
+  openAudioRecorderModal() {
+    this.modalService.open(this.audioRecorderModal);
+  }
+
+  toggleRecording() {
+    this.isRecording = !this.isRecording;
+    if (this.isRecording) {
+      this.startRecording();
+    } else {
+      this.stopRecording();
+    }
+  }
+
+  startRecording() {
+    this.audioService.startRecording();
+    this.recordingTime = '00:00';
+    let elapsedSeconds = 0;
+    this.audioURL = '';
+    this.recordingInterval = setInterval(() => {
+      ++elapsedSeconds;
+      this.recordingTime = this.formatTime(elapsedSeconds);
+    }, 1000);
+  }
+
+  stopRecording() {
+    this.audioService.stopRecording().then((audioBlob) => {
+      this.audioBlob = audioBlob;
+      this.audioURL = window.URL.createObjectURL(audioBlob);
+      clearInterval(this.recordingInterval);
+    });
+  }
+
+  formatTime(seconds: number) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return (
+      mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0')
+    );
+  }
+
+  sendAudioRecord(modal: any) {
+    this.socketService.sendAudio(this.selectedChatId, this.audioBlob);
+    this.audioBlob = null;
+    modal.close('Ok click');
   }
 }

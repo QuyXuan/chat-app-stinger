@@ -10,7 +10,6 @@ import {
   faChevronCircleRight,
   faChevronCircleDown,
 } from '@fortawesome/free-solid-svg-icons';
-import { NgToastService } from 'ng-angular-popup';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { sideBarRoutingData } from './side-bar-routing-data';
 import { ISidebarData, fadeInOut } from './side-bar-helpers';
@@ -24,6 +23,7 @@ import {
 import { Router } from '@angular/router';
 import { DataTransferService } from 'src/app/services/data-transfer/data.service';
 import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 interface SideNavToggle {
   screenWidth: number;
@@ -79,10 +79,10 @@ export class SideBarComponent implements OnInit {
   }
   constructor(
     private authService: AuthService,
-    private toastService: NgToastService,
+    private toastService: ToastService,
     private router: Router,
     private dataTransferService: DataTransferService
-  ) { }
+  ) {}
   ngOnInit(): void {
     this.screenWidth = window.innerWidth;
     this.toggleCollapse();
@@ -137,16 +137,14 @@ export class SideBarComponent implements OnInit {
 
   logout() {
     this.authService.logout();
-    this.toastService.success({
-      detail: 'SUCCESS',
-      summary: 'Logout successfully',
-      duration: 3000,
-    });
+    this.toastService.showSuccess('Logout successfully');
   }
 
   handleClickNavLink(navLinkIndex: number): void {
     this.selectedNavLinkId = navLinkIndex;
-    this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(navLinkIndex, this.sideBarData[navLinkIndex].label))
+    this.dataTransferService.updateSelectedNavLinkId(
+      new SelectedItem(navLinkIndex, this.sideBarData[navLinkIndex].label)
+    );
     this.onClickNavLink.emit(this.sideBarData[navLinkIndex].label);
   }
 
@@ -156,7 +154,7 @@ export class SideBarComponent implements OnInit {
       return '';
     }
     if (this.sideBarData[navLinkIndex].label === 'Chats') {
-      return ['/dashboard', { outlets: { 'body': 'chat' } }];
+      return ['/dashboard', { outlets: { body: 'chat' } }];
     }
     return ['/dashboard'];
   }

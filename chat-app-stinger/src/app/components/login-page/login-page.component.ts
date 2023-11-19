@@ -9,7 +9,7 @@ import {
   faLock,
 } from '@fortawesome/free-solid-svg-icons';
 import { Router } from '@angular/router';
-import { NgToastService } from 'ng-angular-popup';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-login-page',
@@ -42,7 +42,7 @@ export class LoginPageComponent implements OnInit {
     private authService: AuthService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private toastService: NgToastService
+    private toastService: ToastService
   ) {}
 
   passToggle() {
@@ -54,13 +54,14 @@ export class LoginPageComponent implements OnInit {
   onSubmit() {
     if (this.loginForm.valid) {
       const { email, password } = this.loginForm.value;
-      this.authService.login(email, password).subscribe(() => {
-        this.router.navigate(['/dashboard']);
-        this.toastService.success({
-          detail: 'SUCCESS',
-          summary: 'Login successfully',
-          duration: 3000,
-        });
+      this.authService.login(email, password).subscribe({
+        next: (userCredential) => {
+          this.router.navigate(['/dashboard']);
+          this.toastService.showSuccess('Login successfully');
+        },
+        error: (error) => {
+          this.toastService.showError('Login failed');
+        },
       });
     }
   }

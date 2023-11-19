@@ -31,12 +31,13 @@ import { getAuth, provideAuth } from '@angular/fire/auth';
 // Module dependencies
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgToastModule } from 'ng-angular-popup';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DateDisplayPipe } from './pipes/date-display/date-display.pipe';
 import { DatePipe } from '@angular/common';
 import { ThumbnailUploadComponent } from './components/thumbnail-upload/thumbnail-upload.component';
+import { NgSelectModule } from '@ng-select/ng-select';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 @NgModule({
   declarations: [
@@ -68,12 +69,13 @@ import { ThumbnailUploadComponent } from './components/thumbnail-upload/thumbnai
     AngularFireStorageModule,
     FormsModule,
     ReactiveFormsModule,
-    NgToastModule,
     NgbModule,
     FontAwesomeModule,
     BrowserAnimationsModule,
+    NgSelectModule,
+    InfiniteScrollModule,
   ],
   providers: [DatePipe],
   bootstrap: [AppComponent],
 })
-export class AppModule { }
+export class AppModule {}

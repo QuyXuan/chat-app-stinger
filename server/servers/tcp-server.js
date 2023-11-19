@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
-const firebaseStorage = require('../services/firebase.js');
+const firebaseService = require('../services/firebase.js');
 
 class TCPServer {
     constructor() {
@@ -49,6 +49,7 @@ class TCPServer {
 
             // Dùng 1 mảng lưu lại các ảnh mà user này đã upload, mục đích lưu cả danh sách này vào 1 collection trong 1 message mới
             let uploadImages = [];
+            let audioChunksMap = new Map();
 
             console.log('Client đã kết nối');
 
@@ -60,6 +61,21 @@ class TCPServer {
 
             socket.on('images', (data) => {
                 this.combineChunksOfImage(socket, data, uploadImages);
+            });
+
+            socket.on('text', (data) => {
+                console.log('Text: ', data);
+                this.sendMessageToChatRoom(currentUserId, data.chatId, data.text, data.type);
+            });
+
+            socket.on('addToGroupChat', (data) => {
+                console.log('Add to group chat: ', data);
+                this.addToGroupChat(currentUserId, data.newUserIds, data.chatId);
+            });
+
+            socket.on('audio', (data) => {
+                console.log('audio: ', data);
+                this.combineChunksOfAudio(data, audioChunksMap);
             })
 
             socket.on('disconnect', () => {
@@ -91,13 +107,36 @@ class TCPServer {
         }
     }
 
+    combineChunksOfAudio(data, audioChunksMap) {
+        const { fromUser, chatId, chunkIndex, chunk, totalChunks } = data;
+        if (!audioChunksMap.has(chatId)) {
+            audioChunksMap.set(chatId, new Array(totalChunks).fill(null));
+        }
+        const chunksArray = audioChunksMap.get(chatId);
+        chunksArray[chunkIndex] = chunk;
+        const hasAllChunks = chunksArray.every((chunk) => chunk !== null);
+        if (hasAllChunks) {
+            const audioBuffer = Buffer.concat(chunksArray.map((chunk) => Buffer.from(chunk)));
+            this.saveAudioIntoDB(fromUser, chatId, audioBuffer)
+            audioChunksMap.delete(chatId);
+        }
+    }
+
+    saveAudioIntoDB(fromUserId, chatId, bufferData) {
+        const fileNameInFirebase = `${new Date().getTime()}_${chatId}.ogg`;
+        firebaseService.saveBufferToAudioFolder(bufferData, fileNameInFirebase)
+            .then((audioURL) => {
+                firebaseService.saveAudioIntoDB(chatId, fromUserId, audioURL);
+            });
+    }
+
     saveDataIntoDB(fromUserId, chatId, imageId, fileName, base64Data, uploadImages, imageCount) {
         const fileNameInFirebase = `${new Date().getTime()}_${chatId}_${imageId}_${fileName}`;
-        firebaseStorage.saveBase64ToImageFolder(base64Data, fileNameInFirebase)
+        firebaseService.saveBase64ToImageFolder(base64Data, fileNameInFirebase)
             .then((imageURL) => {
                 uploadImages.push(imageURL);
                 if (uploadImages.length === imageCount) {
-                    firebaseStorage.saveImagesIntoDB(chatId, fromUserId, uploadImages)
+                    firebaseService.saveImagesIntoDB(chatId, fromUserId, uploadImages)
                         .then(() => {
                             this.sendDataToChatRoom(chatId, uploadImages);
                         });
@@ -106,10 +145,9 @@ class TCPServer {
     }
 
     sendDataToChatRoom(chatId, uploadImages) {
-        firebaseStorage.getUsersInChatRoom(chatId)
+        firebaseService.getUsersInChatRoom(chatId)
             .then((userIds) => {
                 console.log('Nội dung gửi: ', uploadImages);
-                console.log('Các user trong room:');
                 userIds.forEach((userId) => {
                     const socket = this.users.get(userId);
                     socket.emit('images', uploadImages);
@@ -118,6 +156,17 @@ class TCPServer {
                 // Xoá danh sách ảnh đã upload ngay sau khi gửi xong để sẵn sàng nhận cho
                 uploadImages.splice(0, uploadImages.length);
             });
+    }
+
+    sendMessageToChatRoom(currentUserId, chatId, text, type) {
+        const socket = this.users.get(currentUserId);
+        console.log(currentUserId, chatId, text)
+        socket.emit('text', { chatId: chatId, text: text, type: type });
+    }
+
+    addToGroupChat(currentUserId, newUserIds, chatId) {
+        const socket = this.users.get(currentUserId);
+        socket.emit('addToGroupChat', { newUserIds: newUserIds, chatId: chatId });
     }
 
 }

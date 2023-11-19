@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { NgToastService } from 'ng-angular-popup';
+import { map } from 'rxjs';
 import { PeopleService } from 'src/app/services/people/people.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-pending-friends-page',
@@ -9,34 +10,33 @@ import { PeopleService } from 'src/app/services/people/people.service';
   // styleUrls: ['./pending-friends-page.component.css'],
 })
 export class PendingFriendsPageComponent implements OnInit {
-  allRequests: any;
+  allRequests = this.peopleService.pendingFriendsOfUser.pipe(
+    map((users) => users)
+  );
 
   constructor(
     private peopleService: PeopleService,
-    private toastService: NgToastService
+    private toastService: ToastService
   ) {}
-  ngOnInit(): void {
-    this.peopleService.pendingFriendsOfUser.subscribe((users) => {
-      this.allRequests = users;
+  ngOnInit(): void {}
+
+  acceptRequest(email: any) {
+    this.peopleService.acceptRequest(email).subscribe((res) => {
+      if (res) {
+        this.toastService.showSuccess('Friend request accepted successfully');
+      } else {
+        this.toastService.showError('Friend request accepted failed');
+      }
     });
   }
 
-  acceptRequest(email: string) {
-    this.peopleService.acceptRequest(email);
-    this.toastService.success({
-      detail: 'SUCCESS',
-      summary: 'Friend request accepted',
-      duration: 5000,
-    });
-  }
-
-  deleteRequest(email: string) {
-    this.peopleService.deleteRequest(email).then(() => {
-      this.toastService.success({
-        detail: 'SUCCESS',
-        summary: 'Friend request deleted',
-        duration: 5000,
-      });
+  deleteRequest(email: any) {
+    this.peopleService.deleteRequest(email).subscribe((res) => {
+      if (res) {
+        this.toastService.showSuccess('Friend request deleted successfully');
+      } else {
+        this.toastService.showError('Friend request deleted failed');
+      }
     });
   }
 }

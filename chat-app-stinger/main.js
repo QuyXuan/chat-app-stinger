@@ -11,6 +11,7 @@ function createLoadingWindow() {
         height: 700,
         frame: false,
         show: false,
+        icon: "./dist/chatappstinger/assets/icons/app-icon.ico",
         webPreferences: {
             nodeIntegration: true
         }
@@ -48,7 +49,7 @@ function createMainWindow() {
                 loadingWindow.hide();
                 loadingWindow.close();
             }
-        }, 2500);
+        }, 2000);
     });
 
     // mainWindow.webContents.openDevTools();

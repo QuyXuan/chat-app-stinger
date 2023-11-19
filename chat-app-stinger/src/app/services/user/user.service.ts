@@ -54,4 +54,12 @@ export class UserService {
       ProfileUser[]
     >;
   }
+
+  getUsersById(ids: (string | undefined)[]): Observable<ProfileUser[]> {
+    const usersRef = collection(this.firestore, 'users');
+    const queryUser = query(usersRef, where('uid', 'in', ids));
+    return collectionData(queryUser, { idField: 'uid' }) as Observable<
+      ProfileUser[]
+    >;
+  }
 }
