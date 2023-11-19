@@ -81,13 +81,16 @@ class FirebaseService {
         if (userDoc.exists) {
             const chatRef = db.collection('chats').doc(chatId);
             const messageCollection = chatRef.collection('messages');
+            const today = admin.firestore.FieldValue.serverTimestamp();
 
             await chatRef.update({
                 lastMessage: `${userDoc.data()['displayName']} đã gửi ${uploadImages.length} ảnh.`,
+                lastMessageDate: today
             });
 
             await messageCollection.add({
-                sendId: fromUserId,
+                senderId: fromUserId,
+                sentDate: today,
                 displayName: userDoc.data()['displayName'],
                 avatar: userDoc.data()['photoURL'],
                 images: uploadImages,
