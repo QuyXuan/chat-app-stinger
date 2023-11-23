@@ -29,6 +29,7 @@ import { UserService } from 'src/app/services/user/user.service';
 import { DataImage } from './data-image';
 import { constants } from 'src/app/constants';
 import { AudioService } from 'src/app/services/audio/audio.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-chat-page',
@@ -114,7 +115,8 @@ export class ChatPageComponent implements OnInit {
     private socketService: SocketService,
     private modalService: ModalService,
     private formBuilder: FormBuilder,
-    private audioService: AudioService
+    private audioService: AudioService,
+    private toastService: ToastService
   ) {
     this.selectedForm = this.formBuilder.group({
       selectedMemberIds: [],
@@ -385,5 +387,9 @@ export class ChatPageComponent implements OnInit {
     this.socketService.sendAudio(this.selectedChatId, this.audioBlob);
     this.audioBlob = null;
     modal.close('Ok click');
+  }
+
+  showModalImage(imageURL: any) {
+    this.toastService.showImageModal(imageURL);
   }
 }

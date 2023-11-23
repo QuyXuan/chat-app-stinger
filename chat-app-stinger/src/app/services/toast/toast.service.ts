@@ -39,4 +39,34 @@ export class ToastService {
       title: message,
     });
   }
+
+  showImageModal(imageURL: string) {
+    const swalWithBootstrapButtons = Swal.mixin({
+      customClass: {
+        confirmButton: 'btn btn-success',
+        cancelButton: 'btn btn-danger',
+      },
+      buttonsStyling: true,
+    });
+    swalWithBootstrapButtons
+      .fire({
+        imageUrl: imageURL,
+        imageAlt: 'Image',
+        showCancelButton: true,
+        confirmButtonText: 'Download Image',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true,
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          const downloadLink = document.createElement('a');
+          downloadLink.href = imageURL;
+          downloadLink.download = 'image';
+          downloadLink.style.display = 'none';
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        }
+      });
+  }
 }

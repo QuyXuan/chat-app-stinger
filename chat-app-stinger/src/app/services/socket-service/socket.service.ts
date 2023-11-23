@@ -4,7 +4,6 @@ import { DataImage } from 'src/app/components/dashboard/body/chat-page/data-imag
 import { ChatService } from '../chat/chat.service';
 import { TypeMessage } from 'src/app/models/type-message';
 import { UserService } from '../user/user.service';
-import { AudioService } from '../audio/audio.service';
 
 @Injectable({
   providedIn: 'root',
@@ -15,10 +14,9 @@ export class SocketService {
 
   constructor(
     private chatService: ChatService,
-    private userService: UserService,
-    private audioService: AudioService
+    private userService: UserService
   ) {
-    this.tcpSocket = io('localhost:3000');
+    this.tcpSocket = io('http://localhost:3000');
 
     const accessToken = JSON.parse(localStorage.getItem('access_token') ?? '');
     this.currentUserId = accessToken.user.uid;

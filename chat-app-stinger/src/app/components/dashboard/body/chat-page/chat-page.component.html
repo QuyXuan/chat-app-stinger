@@ -177,7 +177,15 @@
               class="chat-bubble text-break"
               [ngClass]="{ sender: message.senderId === currentUser.uid }"
             >
-              <img [src]="message.text" class="message-image" alt="image" />
+              <div class="img-container d-flex flex-wrap">
+                <img
+                  *ngFor="let image of message.images"
+                  (click)="showModalImage(image)"
+                  [src]="image"
+                  class="message-image"
+                  alt="image"
+                />
+              </div>
               <span
                 class="chat-date text-break"
                 [ngClass]="{ sender: message.senderId === currentUser.uid }"
