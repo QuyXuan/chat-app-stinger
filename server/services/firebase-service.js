@@ -121,7 +121,7 @@ class FirebaseService {
 
     async saveMessageIntoDB(chatId, fromUserId, message, type) {
         try {
-            const db = admin.firestore();
+            const batch = db.batch();
             const userRef = db.collection('users').doc(fromUserId);
             const userDoc = await userRef.get();
             if (userDoc.exists) {
@@ -129,12 +129,12 @@ class FirebaseService {
                 const messageCollection = chatRef.collection('messages');
                 const today = admin.firestore.FieldValue.serverTimestamp();
 
-                await chatRef.update({
-                    lastMessage: (type === 'link') ? 'link.xyz' : message,
+                batch.update(chatRef, {
+                    lastMessage: (type === 'link') ? 'link.xyz' : message.replaceAll('<br/>', '\n'),
                     lastMessageDate: today
                 });
 
-                await messageCollection.add({
+                batch.set(messageCollection.doc(), {
                     senderId: fromUserId,
                     displayName: userDoc.data()['displayName'],
                     sentDate: today,
@@ -142,6 +142,8 @@ class FirebaseService {
                     text: message,
                     type: type
                 });
+
+                await batch.commit();
             }
         }
         catch (e) {

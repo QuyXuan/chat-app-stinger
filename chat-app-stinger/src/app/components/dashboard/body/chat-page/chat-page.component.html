@@ -140,7 +140,7 @@
               class="chat-bubble text-break"
               [ngClass]="{ sender: message.senderId === currentUser.uid }"
             >
-              {{ message.text }}
+              <pre [innerHTML]="message.text" class="message-text"></pre>
               <span
                 class="chat-date text-break"
                 [ngClass]="{ sender: message.senderId === currentUser.uid }"
@@ -273,6 +273,7 @@
             (keydown.enter)="sendMessage()"
             (keydown)="onKeyDown($event)"
             [(ngModel)]="textareaContent"
+            (paste)="handlePaste($event)"
           ></textarea>
 
           <!-- Upload dialog này chỉ hiển thị khi click vào nút + -->

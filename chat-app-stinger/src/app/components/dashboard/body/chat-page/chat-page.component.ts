@@ -192,7 +192,7 @@ export class ChatPageComponent implements OnInit {
       } else {
         this.socketService.sendMessage(
           this.selectedChatId,
-          this.messageControl.value!,
+          this.messageControl.value!.replaceAll('\n', '<br/>'),
           TypeMessage.Text
         );
       }
@@ -217,6 +217,7 @@ export class ChatPageComponent implements OnInit {
     }
     this.scrollToBottom();
     this.messageControl.setValue('');
+    this.currentRows = 1;
   }
 
   getUsersInChat(chatId: string) {
@@ -464,5 +465,46 @@ export class ChatPageComponent implements OnInit {
 
   showModalImage(imageURL: any) {
     this.toastService.showImageModal(imageURL);
+  }
+
+  handlePaste(event: any) {
+    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    for (const item of items) {
+      if (item.type.indexOf('image') !== -1) {
+        const blob = item.getAsFile();
+
+        if (blob) {
+          this.addFileImageToList(blob);
+        }
+      } else if (item.type.indexOf('text/plain') !== -1) {
+        this.textareaContent += event.clipboardData.getData('text/plain');
+        this.currentRows = Math.min(this.calculateNumberOfLines(this.textareaContent, this.inputContent.nativeElement), 10);
+      }
+    }
+  }
+
+  /**
+   * Tính toán số hàng cần để hiển thị nội dung khi paste 1 văn bản vào ô input
+   * @param textContent: nội dung chữ đang có trong ô input
+   * @param inputElement
+   * @returns 
+   */
+  private calculateNumberOfLines(textContent: string, inputElement: HTMLInputElement): number {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+      // Trình duyệt không hỗ trợ canvas
+      return 1;
+    }
+
+    context.font = getComputedStyle(inputElement).font;
+    const textWidth = context.measureText(textContent).width;
+
+    // Chiều rộng hiện tại của input
+    const inputWidth = inputElement.clientWidth;
+
+    // Tính số hàng dựa trên chiều dài của nội dung và chiều rộng của input
+    return Math.ceil(textWidth / inputWidth);
   }
 }
