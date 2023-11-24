@@ -4,7 +4,7 @@ import { DataFile } from 'src/app/components/dashboard/body/chat-page/data-file'
 import { ChatService } from '../chat/chat.service';
 import { TypeMessage } from 'src/app/models/type-message';
 import { UserService } from '../user/user.service';
-import { AudioService } from '../audio/audio.service';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +17,7 @@ export class SocketService {
     private chatService: ChatService,
     private userService: UserService
   ) {
-    this.tcpSocket = io('http://localhost:3000');
+    this.tcpSocket = io(environment.serverRemote);
 
     const accessToken = JSON.parse(localStorage.getItem('access_token') ?? '');
     this.currentUserId = accessToken.user.uid;
