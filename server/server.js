@@ -1,7 +1,7 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
-const firebaseService = require('../services/firebase.js');
+const firebaseService = require('./services/firebase.js');
 
 class TCPServer {
     constructor() {
@@ -48,7 +48,7 @@ class TCPServer {
             let currentUserId = '';
 
             // Dùng 1 mảng lưu lại các ảnh mà user này đã upload, mục đích lưu cả danh sách này vào 1 collection trong 1 message mới
-            let uploadImages = [];
+            let uploadDataFiles = [];
             let audioChunksMap = new Map();
 
             console.log('Client đã kết nối');
@@ -59,13 +59,9 @@ class TCPServer {
                 this.users.set(data.userId, socket);
             });
 
-            socket.on('images', (data) => {
-                this.combineChunksOfImage(socket, data, uploadImages);
-            });
-
             socket.on('text', (data) => {
                 console.log('Text: ', data);
-                this.sendMessageToChatRoom(currentUserId, data.chatId, data.text, data.type);
+                firebaseService.saveMessageIntoDB(data.chatId, currentUserId, data.text, data.type);
             });
 
             socket.on('addToGroupChat', (data) => {
@@ -76,6 +72,11 @@ class TCPServer {
             socket.on('audio', (data) => {
                 console.log('audio: ', data);
                 this.combineChunksOfAudio(data, audioChunksMap);
+            })
+
+            socket.on('dataFiles', (data) => {
+                console.log('dataFiles: ', data);
+                this.combineChunksOfDataFiles(socket, data, uploadDataFiles, data.type);
             })
 
             socket.on('disconnect', () => {
@@ -90,20 +91,21 @@ class TCPServer {
      * @param socket: socket của user đang kết nối 
      * @param data:  id, chunkIndex, chunk, totalChunk
      */
-    combineChunksOfImage(socket, data, uploadImages) {
+    combineChunksOfDataFiles(socket, data, uploadDataFiles, type) {
         const socketData = this.socketDataMap.get(socket.id);
-        if (!socketData[data.imageId]) {
-            socketData[data.imageId] = {};
+        if (!socketData[data.dataFileId]) {
+            socketData[data.dataFileId] = {};
         }
-        socketData[data.imageId][data.chunkIndex] = data.chunk;
+        socketData[data.dataFileId][data.chunkIndex] = data.chunk;
 
         const totalChunks = data.totalChunks;
-        const receivedChunks = Object.keys(socketData[data.imageId]).length;
+        const receivedChunks = Object.keys(socketData[data.dataFileId]).length;
         if (totalChunks == receivedChunks) {
             // Khi đã nhận đã số chunk đã chia nhỏ của file thì tiến hành gộp lại
-            const completeBase64Data = Object.values(socketData[data.imageId]).join('');
-            delete socketData[data.imageId];
-            this.saveDataIntoDB(data.fromUser, data.chatId, data.imageId, data.fileName, completeBase64Data, uploadImages, data.imageCount)
+            const completeBase64Data = Object.values(socketData[data.dataFileId]).join('');
+            delete socketData[data.dataFileId];
+            this.saveDataFilesIntoDB(data.fromUser, data.chatId, data.dataFileId, data.fileName, completeBase64Data, uploadDataFiles, data.dataFilesCount, type)
+            console.log(`Da gui file ${data.fileName}`);
         }
     }
 
@@ -130,16 +132,15 @@ class TCPServer {
             });
     }
 
-    saveDataIntoDB(fromUserId, chatId, imageId, fileName, base64Data, uploadImages, imageCount) {
-        const fileNameInFirebase = `${new Date().getTime()}_${chatId}_${imageId}_${fileName}`;
-        firebaseService.saveBase64ToImageFolder(base64Data, fileNameInFirebase)
-            .then((imageURL) => {
-                uploadImages.push(imageURL);
-                if (uploadImages.length === imageCount) {
-                    firebaseService.saveImagesIntoDB(chatId, fromUserId, uploadImages)
-                        .then(() => {
-                            this.sendDataToChatRoom(chatId, uploadImages);
-                        });
+    saveDataFilesIntoDB(fromUserId, chatId, dataFileId, fileName, base64Data, uploadDataFiles, dataFilesCount, type) {
+        const fileNameInFirebase = `${new Date().getTime()}_${chatId}_${dataFileId}_${fileName}`;
+        firebaseService.saveBase64ToImageFolder(base64Data, fileNameInFirebase, type)
+            .then((fileURL) => {
+                uploadDataFiles.push({ fileURL, fileName });
+                if (uploadDataFiles.length === dataFilesCount) {
+                    firebaseService.saveDataFilesIntoDB(chatId, fromUserId, uploadDataFiles, type).then(() => {
+                        uploadDataFiles.splice(0, uploadDataFiles.length);
+                    });
                 }
             });
     }
@@ -150,18 +151,12 @@ class TCPServer {
                 console.log('Nội dung gửi: ', uploadImages);
                 userIds.forEach((userId) => {
                     const socket = this.users.get(userId);
-                    socket.emit('images', uploadImages);
+                    // socket.emit('images', uploadImages);
                 });
 
                 // Xoá danh sách ảnh đã upload ngay sau khi gửi xong để sẵn sàng nhận cho
                 uploadImages.splice(0, uploadImages.length);
             });
-    }
-
-    sendMessageToChatRoom(currentUserId, chatId, text, type) {
-        const socket = this.users.get(currentUserId);
-        console.log(currentUserId, chatId, text)
-        socket.emit('text', { chatId: chatId, text: text, type: type });
     }
 
     addToGroupChat(currentUserId, newUserIds, chatId) {

@@ -270,6 +270,7 @@
     position: relative;
     height: 75%;
     overflow-y: auto;
+    padding: 0 2%;
 }
 
 .chat-message> :first-child {
@@ -288,11 +289,12 @@
     position: relative;
     background: #f0f0f0;
     color: #050505;
-    padding: 8px 8px 18px 90px;
+    padding: 10px 10px 20px 10px;
     margin-bottom: 16px;
     margin-left: 20px;
     border-radius: 8px;
-    max-width: 60%;
+    max-width: 66.2%;
+    min-width: 106px;
 }
 
 .chat-bubble.sender {
@@ -302,10 +304,11 @@
 
 .chat-message .chat-date {
     position: absolute;
-    bottom: 2px;
+    bottom: -2px;
     right: 8px;
     font-size: 0.7rem;
     color: rgba(0, 0, 0, 0.6);
+    margin-top: 3px;
 }
 
 .chat-message .chat-date.sender {
@@ -463,6 +466,10 @@
 .chat-message .chat-bubble .message-image:hover {
     cursor: pointer;
     transform: scale(1.1);
+}
+
+.chat-message .chat-bubble .file-container {
+    gap: 10px;
 }
 
 @keyframes fadeIn {

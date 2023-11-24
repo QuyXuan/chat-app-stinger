@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { io } from 'socket.io-client';
-import { DataImage } from 'src/app/components/dashboard/body/chat-page/data-image';
+import { DataFile } from 'src/app/components/dashboard/body/chat-page/data-file';
 import { ChatService } from '../chat/chat.service';
 import { TypeMessage } from 'src/app/models/type-message';
 import { UserService } from '../user/user.service';
+import { AudioService } from '../audio/audio.service';
 
 @Injectable({
   providedIn: 'root',
@@ -24,16 +25,6 @@ export class SocketService {
       userId: this.currentUserId,
     });
 
-    this.tcpSocket.on('images', (response: any) => {
-      console.log(response);
-    });
-
-    this.tcpSocket.on('text', (response: any) => {
-      this.chatService
-        .addChatMessage(response.chatId, response.text, response.type)
-        .subscribe();
-    });
-
     this.tcpSocket.on('addToGroupChat', (response: any) => {
       this.userService.getUsersById(response.newUserIds).subscribe((users) => {
         this.chatService
@@ -43,16 +34,19 @@ export class SocketService {
     });
   }
 
-  public sendImages(
-    userIdsInChat: string[],
+  public sendDataFiles(
     chatId: string,
-    images: DataImage[]
+    dataFiles: DataFile[],
+    type: TypeMessage
   ) {
-    const otherUserIds = userIdsInChat.filter(
-      (userId) => userId !== this.currentUserId
-    );
-    images.forEach((image, index) => {
-      this.sendPartsOfImage(otherUserIds, chatId, image, index, images.length);
+    dataFiles.forEach((dataFile, index) => {
+      this.sendPartsOfDataFiles(
+        chatId,
+        dataFile,
+        index,
+        dataFiles.length,
+        type
+      );
     });
   }
 
@@ -61,33 +55,33 @@ export class SocketService {
    * @param image: base64 của image
    * @param index: index của image trong danh sách các image mà client nhấn gửi
    */
-  private sendPartsOfImage(
-    otherUserIds: string[],
+  private sendPartsOfDataFiles(
     chatId: string,
-    dataImage: DataImage,
+    dataFile: DataFile,
     index: number,
-    imageCount: number
+    dataFilesCount: number,
+    type: TypeMessage
   ) {
     // Gửi từng chunk có kích thước 1MB qua server
     const chunkSize = 1024 * 1024;
-    const totalBytes = dataImage.base64.length;
+    const totalBytes = dataFile.base64.length;
     const totalChunks = Math.ceil(totalBytes / chunkSize);
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
       const start = chunkIndex * chunkSize;
       const end = Math.min((chunkIndex + 1) * chunkSize, totalBytes);
-      const chunk = dataImage.base64.slice(start, end);
+      const chunk = dataFile.base64.slice(start, end);
 
       // Gửi từng phần dữ liệu đến server
-      this.tcpSocket.emit('images', {
+      this.tcpSocket.emit('dataFiles', {
         fromUser: this.currentUserId,
-        toUsers: otherUserIds,
         chatId,
-        imageCount: imageCount,
-        fileName: dataImage.fileName,
-        imageId: index,
+        dataFilesCount: dataFilesCount,
+        fileName: dataFile.fileName,
+        dataFileId: index,
         chunkIndex,
         chunk,
         totalChunks,
+        type,
       });
     }
   }

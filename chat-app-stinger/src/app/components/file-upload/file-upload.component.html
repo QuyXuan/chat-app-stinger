@@ -1,0 +1,21 @@
+<div class="file">
+  <div class="file-body">
+    <div>
+      <fa-icon [icon]="getFileIcon()"></fa-icon>
+    </div>
+    <div class="file-content line-clamp line-1" [textContent]="fileName"></div>
+    <fa-icon
+      *ngIf="fileNameURL !== ''"
+      class="cursor-pointer"
+      (click)="downloadFile()"
+      [icon]="faIcon.faCloudDownloadAlt"
+    ></fa-icon>
+  </div>
+  <button
+    *ngIf="fileNameURL === ''"
+    class="btn btn-x"
+    (click)="handleRemoveFile()"
+  >
+    <fa-icon [icon]="faIcon.faClose"></fa-icon>
+  </button>
+</div>

@@ -7,5 +7,5 @@ export interface Message {
   avatar: string;
   displayName: string;
   type: string;
-  images?: any[];
+  dataFiles?: any[];
 }

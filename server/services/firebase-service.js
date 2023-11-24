@@ -12,13 +12,13 @@ class FirebaseService {
         this.bucket = admin.storage().bucket();
     }
 
-    async saveBase64ToImageFolder(base64Data, fileName) {
+    async saveBase64ToImageFolder(base64Data, fileName, type) {
         // Do base64 đọc lúc đọc file có xuất hiện data:image/png;base64, ở phía trước nên ta cần loại bỏ nó trước khi lưu vào firebase
         const base64 = base64Data.split(',')[1];
         const buffer = Buffer.from(base64, 'base64');
 
         // Tạo ra 1 đường dẫn lưu trong thư mục images
-        const file = this.bucket.file(`images/${fileName}`);
+        const file = this.bucket.file(`${type}s/${fileName}`);
         await file.save(buffer, {
             metadata: {
                 content: 'image/jpeg'
@@ -74,7 +74,7 @@ class FirebaseService {
         }
     }
 
-    async saveImagesIntoDB(chatId, fromUserId, uploadImages) {
+    async saveDataFilesIntoDB(chatId, fromUserId, uploadDataFiles, type) {
         const db = admin.firestore();
         const userRef = db.collection('users').doc(fromUserId);
         const userDoc = await userRef.get();
@@ -84,17 +84,42 @@ class FirebaseService {
             const today = admin.firestore.FieldValue.serverTimestamp();
 
             await chatRef.update({
-                lastMessage: `${userDoc.data()['displayName']} đã gửi ${uploadImages.length} ảnh.`,
+                lastMessage: `${userDoc.data()['displayName']} had sent ${uploadDataFiles.length} ${type}(s).`,
                 lastMessageDate: today
             });
 
             await messageCollection.add({
                 senderId: fromUserId,
-                sentDate: today,
                 displayName: userDoc.data()['displayName'],
+                sentDate: today,
                 avatar: userDoc.data()['photoURL'],
-                images: uploadImages,
-                type: 'image'
+                dataFiles: uploadDataFiles,
+                type: type
+            });
+        }
+    }
+
+    async saveMessageIntoDB(chatId, fromUserId, message, type) {
+        const db = admin.firestore();
+        const userRef = db.collection('users').doc(fromUserId);
+        const userDoc = await userRef.get();
+        if (userDoc.exists) {
+            const chatRef = db.collection('chats').doc(chatId);
+            const messageCollection = chatRef.collection('messages');
+            const today = admin.firestore.FieldValue.serverTimestamp();
+
+            await chatRef.update({
+                lastMessage: (type === 'link') ? 'link.xyz' : message,
+                lastMessageDate: today
+            });
+
+            await messageCollection.add({
+                senderId: fromUserId,
+                displayName: userDoc.data()['displayName'],
+                sentDate: today,
+                avatar: userDoc.data()['photoURL'],
+                text: message,
+                type: type
             });
         }
     }

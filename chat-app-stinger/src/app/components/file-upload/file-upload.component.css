@@ -1,0 +1,31 @@
+.file {
+  position: relative;
+  width: 155px;
+  height: 60px;
+  background-color: #959595;
+  padding: 20px;
+  border-radius: 999px;
+}
+
+.file-body {
+  display: flex;
+  gap: 10px;
+}
+
+.file-content {
+  width: 100%;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.btn-x {
+  position: absolute;
+  right: 8px;
+  top: -4px;
+  color: black;
+  background: white;
+  border-radius: 50%;
+  padding: 0px 6px;
+}

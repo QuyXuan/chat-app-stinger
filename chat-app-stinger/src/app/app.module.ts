@@ -36,6 +36,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { DateDisplayPipe } from './pipes/date-display/date-display.pipe';
 import { DatePipe } from '@angular/common';
 import { ThumbnailUploadComponent } from './components/thumbnail-upload/thumbnail-upload.component';
+import { FileUploadComponent } from './components/file-upload/file-upload.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
@@ -55,6 +56,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
     DateDisplayPipe,
     PageNotFoundComponent,
     ThumbnailUploadComponent,
+    FileUploadComponent,
   ],
   imports: [
     provideFirebaseApp(() => initializeApp(environment.firebase)),
