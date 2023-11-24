@@ -86,7 +86,8 @@ class FirebaseService {
                 content,
                 type: data.type,
                 sendAt: new Date(sendAt),
-                receiveAt: new Date()
+                receiveAt: new Date(),
+                isSeen: false
             });
         }
     }

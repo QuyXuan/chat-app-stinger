@@ -38,7 +38,7 @@
 /* ========== Notification list ============  */
 .notification-list {
     padding: 15px 20px 0;
-    max-height: calc(100vh - 160px);
+    height: calc(100vh - 137px);
     overflow: auto;
     background: white;
 }

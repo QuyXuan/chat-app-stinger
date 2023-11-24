@@ -3,6 +3,7 @@ export type NotificationData = {
     senderAvatar: string;
     groupChatName: string;
     content: string;
+    receiveAtSaveInDB: any;
     receiveAt: string;
     isSeen: boolean;
 }

@@ -111,6 +111,9 @@ class TCPServer {
         firebaseService.getUsersInChatRoom(chatId)
             .then((userIds) => {
                 const promises = userIds.map((toUserId) => {
+                    if (fromUserId === toUserId) {
+                        return Promise.resolve();
+                    }
                     const socket = this.users.get(toUserId);
                     if (socket) {
                         socket.emit(data.type, data.content);

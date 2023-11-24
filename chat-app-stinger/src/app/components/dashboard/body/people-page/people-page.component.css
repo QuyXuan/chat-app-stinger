@@ -10,7 +10,8 @@
     height: 8%;
 }
 
-.search-box:hover, .search-box:focus-within {
+.search-box:hover,
+.search-box:focus-within {
     box-shadow: 5px 5px 10px 5px rgba(0, 0, 0, 0.5);
 }
 
@@ -29,7 +30,7 @@
 }
 
 .people-item {
-    background: red;
+    background: #adb3b8;
     width: 12rem;
     border: 1px solid #adb3b8;
     border-radius: 5px;

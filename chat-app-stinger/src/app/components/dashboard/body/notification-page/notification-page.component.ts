@@ -1,6 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { faClose, faUser, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { constants } from 'src/app/constants';
+import { Utils } from 'src/app/helpers/utils';
 import { DataTransferService } from 'src/app/services/data-transfer/data.service';
 import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 import { NotificationData } from 'src/app/services/notification/notification-data';
@@ -37,9 +38,22 @@ export class NotificationPageComponent implements OnInit {
           this.dataTransferService.newNotifications.next(newNotificationsCount);
         }
       });
+
+    this.dataTransferService.selectedNavLink.subscribe((navLink: SelectedItem) => {
+      if (navLink.name === 'Notifications') {
+        this.calculateTimeOfNotificationAgain();
+      }
+    })
   }
 
   handleBtnCloseClick() {
     this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(constants.PREVIOUS_NAV_LINK_ID, 'Chats'));
+  }
+
+  calculateTimeOfNotificationAgain() {
+    // Lần đầu tiên vào component này thì this.notifications = undefined nên mới dùng ?
+    this.notifications?.forEach((notification) => {
+      notification.receiveAt = Utils.calculateBetweenTwoTime(notification.receiveAtSaveInDB);
+    })
   }
 }

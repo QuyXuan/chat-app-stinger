@@ -28,6 +28,7 @@ export class NotificationService {
           groupChatName: data['groupChatName'],
           content: data['content'],
           isSeen: data['isSeen'],
+          receiveAtSaveInDB: data['receiveAt'],
           receiveAt: Utils.calculateBetweenTwoTime(data['receiveAt'])
         };
         result.push(notificationData);
