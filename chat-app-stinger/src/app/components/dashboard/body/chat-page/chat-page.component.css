@@ -371,7 +371,12 @@
     font-weight: 500;
     background: #f4f4f4;
     margin-top: 8px;
-    padding: 0 15px;
+    padding: 8px 15px 0;
+    resize: none;
+}
+
+.chat-bubble-container .message-text {
+    margin-bottom: 0;
 }
 
 .chat-input button {
