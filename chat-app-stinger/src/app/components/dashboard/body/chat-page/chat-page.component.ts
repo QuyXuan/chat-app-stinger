@@ -26,7 +26,7 @@ import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 import { SocketService } from 'src/app/services/socket-service/socket.service';
 import { ModalService } from 'src/app/services/modal/modal.service';
 import { UserService } from 'src/app/services/user/user.service';
-import { DataImage } from './data-image';
+import { DataFile } from './data-file';
 import { constants } from 'src/app/constants';
 import { AudioService } from 'src/app/services/audio/audio.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
@@ -43,6 +43,8 @@ export class ChatPageComponent implements OnInit {
   @ViewChild('create_chat_group') createChatGroupModal: ElementRef | undefined;
   @ViewChild('add_member') addMemberModal: ElementRef | undefined;
   @ViewChild('audio_recorder') audioRecorderModal: ElementRef | undefined;
+  @ViewChild('fileTransferInput')
+  fileTransferInput!: ElementRef<HTMLInputElement>;
 
   isShowChatSidebar: boolean = true;
   isShowUploadDialog: boolean = false;
@@ -55,7 +57,8 @@ export class ChatPageComponent implements OnInit {
   audioURL = '';
 
   // Các images đang chờ được gửi
-  images: DataImage[] = [];
+  images: DataFile[] = [];
+  files: DataFile[] = [];
 
   userIdsInChat!: string[];
 
@@ -173,7 +176,9 @@ export class ChatPageComponent implements OnInit {
   sendMessage() {
     if (
       this.selectedChatId === '' ||
-      (this.messageControl.value?.trim() === '' && this.images.length === 0)
+      (this.messageControl.value?.trim() === '' &&
+        this.images.length === 0 &&
+        this.files.length === 0)
     ) {
       return;
     }
@@ -194,12 +199,21 @@ export class ChatPageComponent implements OnInit {
     }
     if (this.images.length > 0) {
       this.messageControl.setValue('');
-      this.socketService.sendImages(
-        this.userIdsInChat,
+      this.socketService.sendDataFiles(
         this.selectedChatId,
-        this.images
+        this.images,
+        TypeMessage.Image
       );
       this.images = [];
+    }
+    if (this.files.length > 0) {
+      this.messageControl.setValue('');
+      this.socketService.sendDataFiles(
+        this.selectedChatId,
+        this.files,
+        TypeMessage.File
+      );
+      this.files = [];
     }
     this.scrollToBottom();
     this.messageControl.setValue('');
@@ -311,6 +325,27 @@ export class ChatPageComponent implements OnInit {
     this.fileInput.nativeElement.click();
   }
 
+  uploadFiles() {
+    this.fileTransferInput.nativeElement.accept = '*/*';
+    this.fileTransferInput.nativeElement.click();
+  }
+
+  /**
+   * Thêm file ảnh vào list images
+   * @param file
+   */
+  addFileImageToList(file: File) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (e: any) => {
+      const dataImage: DataFile = {
+        fileName: file.name,
+        base64: e.target.result,
+      };
+      this.images.push(dataImage);
+    };
+  }
+
   /**
    * Xử lí sự kiện upload file
    * @param event
@@ -320,17 +355,49 @@ export class ChatPageComponent implements OnInit {
     const files = event.target.files;
     if (files) {
       for (const file of files) {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = (e: any) => {
-          const dataImage: DataImage = {
-            fileName: file.name,
-            base64: e.target.result,
-          };
-          this.images.push(dataImage);
-        };
+        this.addFileImageToList(file);
       }
     }
+  }
+
+  /**
+   * Xử lí sự kiện upload các loại file
+   * @param event
+   */
+  onFileTransferSelected(event: any) {
+    this.isShowUploadDialog = !this.isShowUploadDialog;
+    const files = event.target.files;
+    if (files) {
+      // Giới hạn dung lượng file 25MB
+      const maxFileSize = 25 * 1024 * 1024;
+      for (const file of files) {
+        if (file.size > maxFileSize) {
+          this.toastService.showError(
+            `File ${file.name} có kích thước lớn hơn 25MB và sẽ không được xử lý.`
+          );
+        } else if (this.isFileImage(file)) {
+          this.addFileImageToList(file);
+        } else {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = (e: any) => {
+            const dataImage: DataFile = {
+              fileName: file.name,
+              base64: e.target.result,
+            };
+            this.files.push(dataImage);
+          };
+        }
+      }
+    }
+  }
+
+  /**
+   * Kiểm tra file ảnh
+   * @param file
+   */
+  isFileImage(file: File) {
+    return file.type.split('/')[0] === 'image';
   }
 
   /**
@@ -340,6 +407,12 @@ export class ChatPageComponent implements OnInit {
   removeImage(index: number) {
     this.images = this.images.filter(
       (image, currentIndex) => currentIndex != index
+    );
+  }
+
+  removeFile(index: number) {
+    this.files = this.files.filter(
+      (file, currentIndex) => currentIndex != index
     );
   }
 

@@ -24,6 +24,8 @@ import { Router } from '@angular/router';
 import { DataTransferService } from 'src/app/services/data-transfer/data.service';
 import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { UserService } from 'src/app/services/user/user.service';
+import { constants } from 'src/app/constants';
 
 interface SideNavToggle {
   screenWidth: number;
@@ -65,6 +67,8 @@ export class SideBarComponent implements OnInit {
   faChevronCircleDown = faChevronCircleDown;
   sideBarData = sideBarRoutingData;
   multiple: boolean = false;
+  photoURL = '';
+  displayName = '';
 
   @HostListener('window:resize', ['$event'])
   onResize() {
@@ -81,7 +85,8 @@ export class SideBarComponent implements OnInit {
     private authService: AuthService,
     private toastService: ToastService,
     private router: Router,
-    private dataTransferService: DataTransferService
+    private dataTransferService: DataTransferService,
+    private userService: UserService
   ) {}
   ngOnInit(): void {
     this.screenWidth = window.innerWidth;
@@ -95,6 +100,11 @@ export class SideBarComponent implements OnInit {
       this.dataTransferService.updateSelectedNavLinkId(new SelectedItem(0, ''));
       this.sideBarData[0].expanded = true;
     }
+
+    this.userService.currentUserProfile.subscribe((currentUser) => {
+      this.photoURL = currentUser!.photoURL ?? constants.DEFAULT_AVATAR_URL;
+      this.displayName = currentUser!.displayName ?? 'Stinger';
+    });
   }
 
   getRouterLink(data: ISidebarData) {
