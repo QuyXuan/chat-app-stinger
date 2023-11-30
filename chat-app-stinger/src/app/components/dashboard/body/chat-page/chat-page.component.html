@@ -77,7 +77,7 @@
           <button class="btn-item">
             <fa-icon [icon]="faIcon.faPhone"></fa-icon>
           </button>
-          <button class="btn-item">
+          <button class="btn-item" (click)="callVideo()">
             <fa-icon [icon]="faIcon.faVideo"></fa-icon>
           </button>
           <button
@@ -474,4 +474,8 @@
       Send audio
     </button>
   </div>
+</ng-template>
+<!-- call video modal -->
+<ng-template #call_video let-modal>
+  <app-video-call-widget></app-video-call-widget>
 </ng-template>

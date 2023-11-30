@@ -5,6 +5,8 @@ import { ChatService } from '../chat/chat.service';
 import { TypeMessage } from 'src/app/models/type-message';
 import { UserService } from '../user/user.service';
 import { environment } from 'src/environments/environment';
+import { Observable, Subject } from 'rxjs';
+import { ToastService } from '../toast/toast.service';
 
 @Injectable({
   providedIn: 'root',
@@ -12,12 +14,22 @@ import { environment } from 'src/environments/environment';
 export class SocketService {
   private tcpSocket: any;
   private currentUserId!: string;
+  private videoOfferSubject = new Subject<any>();
+  public get videoOfferObservable(): Observable<any> {
+    return this.videoOfferSubject.asObservable();
+  }
+  private videoAnswerSubject = new Subject<any>();
+  public get videoAnswerObservable(): Observable<any> {
+    return this.videoAnswerSubject.asObservable();
+  }
 
   constructor(
     private chatService: ChatService,
-    private userService: UserService
+    private userService: UserService,
+    private toastService: ToastService
   ) {
-    this.tcpSocket = io(environment.serverRemote);
+    // this.tcpSocket = io(environment.serverRemote);
+    this.tcpSocket = io('http://localhost:3000');
 
     const accessToken = JSON.parse(localStorage.getItem('access_token') ?? '');
     this.currentUserId = accessToken.user.uid;
@@ -31,6 +43,19 @@ export class SocketService {
           .addMemberToGroupChat(users, response.chatId)
           .subscribe();
       });
+    });
+
+    this.tcpSocket.on('videoOffer', (response: any) => {
+      console.log(response);
+      this.userService.currentUserProfile.subscribe((currentUser) => {
+        // const currentUserName = currentUser?.displayName;
+        // this.toastService.showOfferCallVideo(currentUserName!);
+        this.videoOfferSubject.next(response);
+      });
+    });
+
+    this.tcpSocket.on('videoAnswer', (response: any) => {
+      this.videoAnswerSubject.next(response);
     });
   }
 
@@ -120,5 +145,38 @@ export class SocketService {
         totalChunks: totalChunks,
       });
     }
+  }
+
+  // public sendVideoOffer(chatId: string, chatUserIds: string[]) {
+  //   this.tcpSocket.emit('videoOffer', {
+  //     fromUser: this.currentUserId,
+  //     chatId,
+  //     chatUserIds,
+  //   });
+  // }
+
+  public sendVideoOffer(
+    chatId: string,
+    chatUserIds: string[],
+    offer: RTCSessionDescriptionInit
+  ) {
+    this.tcpSocket.emit('videoOffer', {
+      fromUser: this.currentUserId,
+      chatId: chatId,
+      chatUserIds: chatUserIds,
+      offer: offer,
+    });
+  }
+
+  public sendVideoAnswer(toUser: string, answer: RTCSessionDescriptionInit) {
+    this.tcpSocket.emit('videoAnswer', {
+      fromUser: this.currentUserId,
+      toUser: toUser,
+      answer: answer,
+    });
+  }
+
+  public sendToPeer(event: string, data: any) {
+    this.tcpSocket.emit(event, data);
   }
 }

@@ -186,6 +186,25 @@ export class ChatService {
     );
   }
 
+  getChatUserIdsExceptMe(chatId: string): Observable<string[]> {
+    const chatRef = doc(this.firestore, 'chats', chatId);
+    return this.userService.currentUserProfile.pipe(
+      take(1),
+      switchMap((currentUser) => {
+        return docData(chatRef).pipe(
+          map((chat: any) => {
+            if (!currentUser || !chat.userIds) {
+              return [];
+            }
+            return chat.userIds.filter(
+              (userId: string) => userId !== currentUser.uid
+            );
+          })
+        );
+      })
+    );
+  }
+
   addMemberToGroupChat(
     newMembers: ProfileUser[],
     chatId: string

@@ -9,10 +9,11 @@ export class ModalService {
 
   constructor(private modalService: NgbModal) {}
 
-  open(content: any) {
+  open(content: any, style?: { size?: 'sm' | 'lg' | 'xl' }) {
     return this.modalService
       .open(content, {
         ariaLabelledBy: 'modal-basic-title',
+        size: style?.size || 'md',
       })
       .result.then(
         (result) => {

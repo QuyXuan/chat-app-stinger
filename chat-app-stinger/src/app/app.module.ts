@@ -39,6 +39,7 @@ import { ThumbnailUploadComponent } from './components/thumbnail-upload/thumbnai
 import { FileUploadComponent } from './components/file-upload/file-upload.component';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
+import { VideoCallWidgetComponent } from './components/video-call-widget/video-call-widget.component';
 
 @NgModule({
   declarations: [
@@ -57,6 +58,7 @@ import { InfiniteScrollModule } from 'ngx-infinite-scroll';
     PageNotFoundComponent,
     ThumbnailUploadComponent,
     FileUploadComponent,
+    VideoCallWidgetComponent,
   ],
   imports: [
     provideFirebaseApp(() => initializeApp(environment.firebase)),

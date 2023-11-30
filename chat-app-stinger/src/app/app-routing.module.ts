@@ -11,6 +11,7 @@ import { SignupPageComponent } from './components/signup-page/signup-page.compon
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { ChatPageComponent } from './components/dashboard/body/chat-page/chat-page.component';
+import { VideoCallWidgetComponent } from './components/video-call-widget/video-call-widget.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginPageComponent, canActivate: [loginAuth] },
@@ -41,6 +42,7 @@ const routes: Routes = [
     ],
   },
   { path: 'not-found', component: PageNotFoundComponent },
+  { path: 'video-call', component: VideoCallWidgetComponent },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 
   // Nếu không khớp với tất cả route trên thì điều hướng đến trang NotFound

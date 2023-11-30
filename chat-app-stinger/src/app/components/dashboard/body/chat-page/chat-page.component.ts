@@ -30,6 +30,7 @@ import { DataFile } from './data-file';
 import { constants } from 'src/app/constants';
 import { AudioService } from 'src/app/services/audio/audio.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { VideoCallService } from 'src/app/services/video-call/video-call.service';
 
 @Component({
   selector: 'app-chat-page',
@@ -43,6 +44,7 @@ export class ChatPageComponent implements OnInit {
   @ViewChild('create_chat_group') createChatGroupModal: ElementRef | undefined;
   @ViewChild('add_member') addMemberModal: ElementRef | undefined;
   @ViewChild('audio_recorder') audioRecorderModal: ElementRef | undefined;
+  @ViewChild('call_video') callVideoModal: ElementRef | undefined;
   @ViewChild('fileTransferInput')
   fileTransferInput!: ElementRef<HTMLInputElement>;
 
@@ -119,7 +121,8 @@ export class ChatPageComponent implements OnInit {
     private modalService: ModalService,
     private formBuilder: FormBuilder,
     private audioService: AudioService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private videoCallService: VideoCallService
   ) {
     this.selectedForm = this.formBuilder.group({
       selectedMemberIds: [],
@@ -145,6 +148,7 @@ export class ChatPageComponent implements OnInit {
         }
       }
     );
+    this.videoCallService.requestMediaDevices();
   }
 
   createChat(friend: ProfileUser) {
@@ -464,5 +468,14 @@ export class ChatPageComponent implements OnInit {
 
   showModalImage(imageURL: any) {
     this.toastService.showImageModal(imageURL);
+  }
+
+  callVideo() {
+    this.modalService.open(this.callVideoModal, { size: 'xl' });
+    this.chatService
+      .getChatUserIdsExceptMe(this.selectedChatId)
+      .subscribe((userIds) => {
+        this.videoCallService.sendOffer(this.selectedChatId, userIds);
+      });
   }
 }

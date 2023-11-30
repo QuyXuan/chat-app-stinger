@@ -69,4 +69,24 @@ export class ToastService {
         }
       });
   }
+
+  showOfferCallVideo(hostName: string) {
+    Swal.fire({
+      title: `Let's call with ${hostName} ?`,
+      text: 'Accept to join with us!',
+      icon: 'question',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      showCancelButton: true,
+      cancelButtonColor: '#d33',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Deleted!',
+          text: 'Your file has been deleted.',
+          icon: 'success',
+        });
+      }
+    });
+  }
 }

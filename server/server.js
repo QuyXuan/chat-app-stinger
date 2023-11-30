@@ -89,6 +89,29 @@ class TCPServer {
                     this.combineChunksOfDataFiles(socket, data, uploadDataFiles, data.type);
                 })
 
+                socket.on('videoOffer', (data) => {
+                    console.log('video-offer: ', data);
+                    const usersSocketOfferedToCall = data.chatUserIds.map((userId) => {
+                        return this.users.get(userId);
+                    });
+                    usersSocketOfferedToCall.forEach((socket) => {
+                        if (socket) {
+                            console.log('send video-offer');
+                            socket.emit('videoOffer', { response: data });
+                        }
+                    });
+                });
+
+                socket.on('videoAnswer', (data) => {
+                    console.log('video-answer: ', data);
+                    const socketToAnswer = this.users.get(data.toUser);
+                    if (socketToAnswer) {
+                        console.log('send video-answer');
+                        socketToAnswer.emit('videoAnswer', { response: data });
+                    }
+
+                })
+
                 socket.on('disconnect', () => {
                     console.log('Client đã ngắt kết nối');
                     this.users.delete(currentUserId);

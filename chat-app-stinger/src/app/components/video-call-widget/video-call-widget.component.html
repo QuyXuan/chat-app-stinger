@@ -1,0 +1,35 @@
+<div class="video-call-container">
+  <div class="row-container d-flex justify-content-between">
+    <div class="host-container">
+      <video
+        class="host-img"
+        #local_video
+        [autoplay]="true"
+        [muted]="true"
+      ></video>
+      <div class="controls d-flex align-items-center justify-content-center">
+        <img src="../../../assets/img/video-call/chat.png" alt="chat" />
+        <img
+          src="../../../assets/img/video-call/disconnect.png"
+          alt="disconnect"
+        />
+        <img
+          src="../../../assets/img/video-call/call.png"
+          alt="call"
+          class="call-img"
+          (click)="call()"
+        />
+        <img src="../../../assets/img/video-call/mic.png" alt="mic" />
+        <img src="../../../assets/img/video-call/cast.png" alt="cast" />
+      </div>
+    </div>
+    <div class="guest-container">
+      <div class="people-joined">
+        <p>People joined</p>
+        <div class="d-flex flex-wrap gap-3">
+          <video #received_video [autoplay]="true"></video>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
