@@ -121,6 +121,7 @@ class FirebaseService {
 
     async saveMessageIntoDB(chatId, fromUserId, message, type) {
         try {
+            const db = admin.firestore();
             const batch = db.batch();
             const userRef = db.collection('users').doc(fromUserId);
             const userDoc = await userRef.get();
