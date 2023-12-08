@@ -89,27 +89,29 @@ class TCPServer {
                     this.combineChunksOfDataFiles(socket, data, uploadDataFiles, data.type);
                 })
 
-                socket.on('videoOffer', (data) => {
-                    console.log('video-offer: ', data);
+                socket.on('callUser', (data) => {
+                    console.log(data.chatUserIds);
                     const usersSocketOfferedToCall = data.chatUserIds.map((userId) => {
                         return this.users.get(userId);
                     });
+                    console.log(usersSocketOfferedToCall);
                     usersSocketOfferedToCall.forEach((socket) => {
                         if (socket) {
-                            console.log('send video-offer');
-                            socket.emit('videoOffer', { response: data });
+                            console.log('send call-user');
+                            socket.emit('callUser', { response: data });
                         }
-                    });
+                    })
                 });
 
-                socket.on('videoAnswer', (data) => {
-                    console.log('video-answer: ', data);
-                    const socketToAnswer = this.users.get(data.toUser);
+                socket.on('answerCall', (data) => {
+                    console.log(data);
+                    const socketToAnswer = this.users.get(data.toUserId);
+                    console.log(socketToAnswer);
+                    console.log(this.users);
                     if (socketToAnswer) {
-                        console.log('send video-answer');
-                        socketToAnswer.emit('videoAnswer', { response: data });
+                        console.log('send answer-call');
+                        socketToAnswer.emit('callAccepted', { response: data });
                     }
-
                 })
 
                 socket.on('disconnect', () => {

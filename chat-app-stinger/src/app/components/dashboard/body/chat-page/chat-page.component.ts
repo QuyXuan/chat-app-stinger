@@ -30,7 +30,6 @@ import { DataFile } from './data-file';
 import { constants } from 'src/app/constants';
 import { AudioService } from 'src/app/services/audio/audio.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
-import { VideoCallService } from 'src/app/services/video-call/video-call.service';
 
 @Component({
   selector: 'app-chat-page',
@@ -121,8 +120,7 @@ export class ChatPageComponent implements OnInit {
     private modalService: ModalService,
     private formBuilder: FormBuilder,
     private audioService: AudioService,
-    private toastService: ToastService,
-    private videoCallService: VideoCallService
+    private toastService: ToastService
   ) {
     this.selectedForm = this.formBuilder.group({
       selectedMemberIds: [],
@@ -148,7 +146,6 @@ export class ChatPageComponent implements OnInit {
         }
       }
     );
-    this.videoCallService.requestMediaDevices();
   }
 
   createChat(friend: ProfileUser) {
@@ -156,6 +153,7 @@ export class ChatPageComponent implements OnInit {
   }
 
   selectChat(chat: any) {
+    console.log(chat);
     this.isGroupChat = chat?.groupChatName !== undefined;
     this.messageTake = constants.MESSAGE_TAKE;
     if (this.isGroupChat) {
@@ -475,7 +473,7 @@ export class ChatPageComponent implements OnInit {
     this.chatService
       .getChatUserIdsExceptMe(this.selectedChatId)
       .subscribe((userIds) => {
-        this.videoCallService.sendOffer(this.selectedChatId, userIds);
+        this.chatService.chatUserIdsSubject.next(userIds);
       });
   }
 }

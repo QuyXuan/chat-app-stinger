@@ -17,7 +17,16 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Observable, concatMap, from, map, of, switchMap, take } from 'rxjs';
+import {
+  Observable,
+  Subject,
+  concatMap,
+  from,
+  map,
+  of,
+  switchMap,
+  take,
+} from 'rxjs';
 import { UserService } from '../user/user.service';
 import { Chat } from 'src/app/models/chat';
 import { ProfileUser } from 'src/app/models/profile-user';
@@ -29,6 +38,11 @@ import { TypeMessage } from 'src/app/models/type-message';
   providedIn: 'root',
 })
 export class ChatService {
+  public chatUserIdsSubject = new Subject<any>();
+  public get chatUserIdsObservable(): Observable<any> {
+    return this.chatUserIdsSubject.asObservable();
+  }
+
   constructor(private firestore: Firestore, private userService: UserService) {}
 
   get myChats(): Observable<Chat[]> {

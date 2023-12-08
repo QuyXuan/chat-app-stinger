@@ -12,15 +12,11 @@ import { ToastService } from '../toast/toast.service';
   providedIn: 'root',
 })
 export class SocketService {
-  private tcpSocket: any;
+  public tcpSocket: any;
   private currentUserId!: string;
-  private videoOfferSubject = new Subject<any>();
-  public get videoOfferObservable(): Observable<any> {
-    return this.videoOfferSubject.asObservable();
-  }
-  private videoAnswerSubject = new Subject<any>();
-  public get videoAnswerObservable(): Observable<any> {
-    return this.videoAnswerSubject.asObservable();
+  private callUserSubject = new Subject<any>();
+  public get callUserObservable(): Observable<any> {
+    return this.callUserSubject.asObservable();
   }
 
   constructor(
@@ -28,8 +24,8 @@ export class SocketService {
     private userService: UserService,
     private toastService: ToastService
   ) {
-    // this.tcpSocket = io(environment.serverRemote);
-    this.tcpSocket = io('http://localhost:3000');
+    this.tcpSocket = io(environment.serverRemote);
+    // this.tcpSocket = io('http://localhost:3000');
 
     const accessToken = JSON.parse(localStorage.getItem('access_token') ?? '');
     this.currentUserId = accessToken.user.uid;
@@ -45,17 +41,8 @@ export class SocketService {
       });
     });
 
-    this.tcpSocket.on('videoOffer', (response: any) => {
-      console.log(response);
-      this.userService.currentUserProfile.subscribe((currentUser) => {
-        // const currentUserName = currentUser?.displayName;
-        // this.toastService.showOfferCallVideo(currentUserName!);
-        this.videoOfferSubject.next(response);
-      });
-    });
-
-    this.tcpSocket.on('videoAnswer', (response: any) => {
-      this.videoAnswerSubject.next(response);
+    this.tcpSocket.on('callUser', (data: any) => {
+      this.callUserSubject.next(data);
     });
   }
 
@@ -147,14 +134,6 @@ export class SocketService {
     }
   }
 
-  // public sendVideoOffer(chatId: string, chatUserIds: string[]) {
-  //   this.tcpSocket.emit('videoOffer', {
-  //     fromUser: this.currentUserId,
-  //     chatId,
-  //     chatUserIds,
-  //   });
-  // }
-
   public sendVideoOffer(
     chatId: string,
     chatUserIds: string[],
@@ -178,5 +157,21 @@ export class SocketService {
 
   public sendToPeer(event: string, data: any) {
     this.tcpSocket.emit(event, data);
+  }
+
+  public callUser(chatUserIds: string[], signalData: any) {
+    this.tcpSocket.emit('callUser', {
+      fromUser: this.currentUserId,
+      chatUserIds,
+      signalData,
+    });
+  }
+
+  public answerCall(toUserId: string, signalData: any) {
+    this.tcpSocket.emit('answerCall', {
+      fromUser: this.currentUserId,
+      toUserId,
+      signalData,
+    });
   }
 }
