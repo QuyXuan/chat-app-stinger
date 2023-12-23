@@ -11,10 +11,12 @@ import { SignupPageComponent } from './components/signup-page/signup-page.compon
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { ChatPageComponent } from './components/dashboard/body/chat-page/chat-page.component';
+import { DocsPageComponent } from './components/docs-page/docs-page.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginPageComponent, canActivate: [loginAuth] },
   { path: 'signup', component: SignupPageComponent, canActivate: [loginAuth] },
+  { path: 'docs', component: DocsPageComponent },
   {
     path: 'dashboard',
     component: DashboardComponent,

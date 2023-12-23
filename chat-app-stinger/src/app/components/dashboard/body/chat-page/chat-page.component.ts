@@ -14,6 +14,7 @@ import {
   faPlus,
   faImage,
   faMicrophone,
+  faFile,
 } from '@fortawesome/free-solid-svg-icons';
 import { Observable, combineLatest, map, of, startWith } from 'rxjs';
 import { Chat } from 'src/app/models/chat';
@@ -32,6 +33,7 @@ import { AudioService } from 'src/app/services/audio/audio.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { Utils } from 'src/app/helpers/utils';
 import { Timestamp } from '@angular/fire/firestore';
+import { DocService } from 'src/app/services/doc-service/doc.service';
 
 @Component({
   selector: 'app-chat-page',
@@ -45,6 +47,7 @@ export class ChatPageComponent implements OnInit {
   @ViewChild('create_chat_group') createChatGroupModal: ElementRef | undefined;
   @ViewChild('add_member') addMemberModal: ElementRef | undefined;
   @ViewChild('audio_recorder') audioRecorderModal: ElementRef | undefined;
+  @ViewChild('doc_list') docListModal: ElementRef | undefined;
   @ViewChild('fileTransferInput')
   fileTransferInput!: ElementRef<HTMLInputElement>;
 
@@ -57,6 +60,7 @@ export class ChatPageComponent implements OnInit {
   recordingInterval: any;
   audioBlob: any;
   audioURL = '';
+  docs: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
 
   // Các images đang chờ được gửi
   images: DataFile[] = [];
@@ -77,6 +81,7 @@ export class ChatPageComponent implements OnInit {
     faPlus: faPlus,
     faImage: faImage,
     faRecord: faMicrophone,
+    faFile: faFile,
   };
 
   selectedForm: FormGroup = new FormGroup({});
@@ -94,6 +99,7 @@ export class ChatPageComponent implements OnInit {
   isGroupChat = false;
   messageTake = constants.MESSAGE_TAKE;
   loadMessageFinished = true;
+  nameOfNewDoc = '';
 
   myChats = combineLatest([
     this.chatService.myChats,
@@ -127,14 +133,15 @@ export class ChatPageComponent implements OnInit {
     private modalService: ModalService,
     private formBuilder: FormBuilder,
     private audioService: AudioService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private docService: DocService
   ) {
     this.currentUserId = Utils.getUserId();
     this.selectedForm = this.formBuilder.group({
       selectedMemberIds: [],
     });
 
-    this.currentUser.subscribe(profileUser => {
+    this.currentUser.subscribe((profileUser) => {
       this.avatar = profileUser?.photoURL ?? constants.DEFAULT_AVATAR_URL;
       this.displayName = profileUser?.displayName ?? 'Stinger';
     });
@@ -247,18 +254,18 @@ export class ChatPageComponent implements OnInit {
       sentDate: Timestamp.now(),
       type: typeMessage,
       displayName: this.displayName,
-      avatar: this.avatar
+      avatar: this.avatar,
     };
   }
 
   addMessageIntoPageImmediately(typeMessage: string, content: string) {
     const newMessage = this.createMessage(typeMessage, content);
-    this.messages?.subscribe(currentMessages => {
+    this.messages?.subscribe((currentMessages) => {
       currentMessages.push(newMessage);
-      this.messages = new Observable<Message[]>(observer => {
+      this.messages = new Observable<Message[]>((observer) => {
         observer.next([...currentMessages]);
       });
-    })
+    });
   }
 
   getUsersInChat(chatId: string) {
@@ -509,7 +516,8 @@ export class ChatPageComponent implements OnInit {
   }
 
   handlePaste(event: any) {
-    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    const items = (event.clipboardData || event.originalEvent.clipboardData)
+      .items;
     for (const item of items) {
       if (item.type.indexOf('image') !== -1) {
         const blob = item.getAsFile();
@@ -518,8 +526,14 @@ export class ChatPageComponent implements OnInit {
           this.addFileImageToList(blob);
         }
       } else if (item.type.indexOf('text/plain') !== -1) {
-        const text = this.textareaContent + event.clipboardData.getData('text/plain');
-        this.currentRows = Math.min(this.calculateNumberOfLines(text, this.inputContent.nativeElement), 10);
+        this.textareaContent += event.clipboardData.getData('text/plain');
+        this.currentRows = Math.min(
+          this.calculateNumberOfLines(
+            this.textareaContent,
+            this.inputContent.nativeElement
+          ),
+          10
+        );
       }
     }
   }
@@ -528,9 +542,12 @@ export class ChatPageComponent implements OnInit {
    * Tính toán số hàng cần để hiển thị nội dung khi paste 1 văn bản vào ô input
    * @param textContent: nội dung chữ đang có trong ô input
    * @param inputElement
-   * @returns 
+   * @returns
    */
-  private calculateNumberOfLines(textContent: string, inputElement: HTMLInputElement): number {
+  private calculateNumberOfLines(
+    textContent: string,
+    inputElement: HTMLInputElement
+  ): number {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
 
@@ -547,12 +564,44 @@ export class ChatPageComponent implements OnInit {
     let totalLines = 0;
     const textInLines: string[] = textContent.split('\n');
     totalLines += textInLines.length;
-    textInLines.forEach(text => {
+    textInLines.forEach((text) => {
       const line = Math.ceil(context.measureText(text).width / inputWidth);
       totalLines += line - 1;
     });
 
     // Tính số hàng dựa trên chiều dài của nội dung và chiều rộng của input
-    return totalLines;
+    return Math.ceil(textWidth / inputWidth);
+  }
+
+  openDocumentModal() {
+    this.modalService.open(this.docListModal);
+  }
+
+  createDoc(modal: any) {
+    debugger;
+    if (this.nameOfNewDoc.trim() !== '') {
+      this.docService
+        .createDoc(this.userIdsInChat, this.nameOfNewDoc.trim())
+        .subscribe((docId) => {
+          //
+        });
+    }
+    modal.close('Ok click');
+  }
+
+  openDocumentModal() {
+    this.modalService.open(this.docListModal);
+  }
+
+  createDoc(modal: any) {
+    debugger;
+    if (this.nameOfNewDoc.trim() !== '') {
+      this.docService
+        .createDoc(this.userIdsInChat, this.nameOfNewDoc.trim())
+        .subscribe((docId) => {
+          //
+        });
+    }
+    modal.close('Ok click');
   }
 }

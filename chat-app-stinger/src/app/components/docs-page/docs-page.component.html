@@ -1,0 +1,26 @@
+<header>
+  <div class="d-flex justify-content-start align-items-center gap-3">
+    <fa-icon
+      class="arrow-back"
+      [icon]="faIcon.faArrowLeft"
+      (click)="goBack()"
+    ></fa-icon>
+    <img
+      src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png"
+      alt="doc"
+    />
+    <p class="doc-name">{{ docName }}</p>
+  </div>
+</header>
+<div class="container d-flex justify-content-center">
+  <quill-editor
+    [(ngModel)]="content"
+    [readOnly]="false"
+    [styles]="{ height: '80vh', width: '85vw', background: '#fff' }"
+    [theme]="'snow'"
+    [placeholder]="'Insert text here...'"
+    (onContentChanged)="onContentChanged($event)"
+    (onSelectionChanged)="onSelectionChanged($event)"
+  >
+  </quill-editor>
+</div>
