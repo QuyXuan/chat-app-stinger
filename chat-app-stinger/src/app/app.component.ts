@@ -27,6 +27,11 @@ export class AppComponent {
    */
   @HostListener('window:offline', ['$event'])
   onOffline(event: Event): void {
-    this.toastService.showError('You are offline');
+    this.toastService.showError('You are offline.');
+  }
+
+  @HostListener('window:online', ['$event'])
+  onOnline(event: Event): void {
+    this.toastService.showSuccess('Your connection is stable again.');
   }
 }

@@ -114,6 +114,39 @@
     color: #000000;
 }
 
+@keyframes ping {
+    0% {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+.ping {
+    position: relative;
+}
+
+.ping::after,
+.ping::before {
+    position: absolute;
+    top: 9px;
+    right: 12px;
+    content: "";
+    width: 12px;
+    height: 12px;
+    background-color: red;
+    border-radius: 50%;
+}
+
+.ping::before {
+    animation: ping 1.5s ease infinite;
+    opacity: 0.25;
+}
+
 .sidenav-nav .sidenav-nav-item .sidenav-nav-link:hover .menu-collapse-icon {
     color: #000;
 }

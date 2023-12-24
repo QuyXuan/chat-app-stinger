@@ -6,9 +6,9 @@ import { Timestamp } from '@angular/fire/firestore';
   name: 'dateDisplay',
 })
 export class DateDisplayPipe implements PipeTransform {
-  constructor(private datePipe: DatePipe) {}
+  constructor(private datePipe: DatePipe) { }
 
   transform(value: Timestamp | undefined): string {
-    return this.datePipe.transform(value?.toMillis(), 'short') ?? '';
+    return this.datePipe.transform(value?.toMillis(), 'dd/MM/yyyy HH:mm') ?? '';
   }
 }

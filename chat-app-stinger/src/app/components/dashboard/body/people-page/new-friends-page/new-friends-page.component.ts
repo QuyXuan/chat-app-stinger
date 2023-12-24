@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
 import { combineLatest, map, startWith } from 'rxjs';
 import { PeopleService } from 'src/app/services/people/people.service';
+import { SocketService } from 'src/app/services/socket-service/socket.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
@@ -11,7 +12,7 @@ import { ToastService } from 'src/app/services/toast/toast.service';
   styleUrls: ['../people-page.component.css'],
   // styleUrls: ['./new-friends-page.component.css'],
 })
-export class NewFriendsPageComponent implements OnInit {
+export class NewFriendsPageComponent {
   faIcon = {
     faMagnifyingGlass: faMagnifyingGlass,
   };
@@ -26,16 +27,18 @@ export class NewFriendsPageComponent implements OnInit {
       );
     })
   );
-  ngOnInit(): void {}
+
   constructor(
     private peopleService: PeopleService,
-    private toastService: ToastService
-  ) {}
+    private toastService: ToastService,
+    private socketService: SocketService
+  ) { }
 
   addFriend(receiver: string) {
     this.peopleService.sendFriendRequest(receiver).subscribe((res) => {
       if (res) {
         this.toastService.showSuccess('Friend request sent');
+        this.socketService.sendRequestAddAcceptNewFriend(receiver, 'addNewFriend');
       } else {
         this.toastService.showError('Friend request sent');
       }

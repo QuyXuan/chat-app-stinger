@@ -47,9 +47,11 @@
     display: flex;
     flex-direction: column;
     margin-right: -20px;
-    padding-right: 40px;
+    padding-right: 32px;
     height: 82vh;
     overflow-y: auto;
+    overflow-x: hidden;
+    padding-left: 16px;
 }
 
 .chat-main .info-item {
@@ -66,7 +68,7 @@
     content: "";
     position: absolute;
     top: 0;
-    left: 0;
+    left: 15px;
     height: 100%;
     width: 4px;
     background-color: #1c9dea;
@@ -87,12 +89,12 @@
 }
 
 .chat-main .info-item .chat-box .details {
-    padding: 12px 50px 13px 75px;
+    padding: 12px 50px 13px 64px;
 }
 
 .profile img {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     display: inline-block;
     border-radius: 20px;
     position: relative;
@@ -113,10 +115,9 @@
 .date-status .date,
 .details .content {
     font-size: 1rem;
-    width: 10em;
     line-height: 1.86;
     color: #a9b3bb;
-    white-space: nowrap;
+    white-space: normal;
     margin-bottom: 0;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -132,8 +133,8 @@
 
 .chat-main .info-item .chat-box .date-status {
     position: absolute;
-    right: 0;
-    top: 10px;
+    right: -10px;
+    top: 12px;
     text-align: right;
 }
 

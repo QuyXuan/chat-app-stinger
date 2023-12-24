@@ -30,6 +30,7 @@ import { DataFile } from './data-file';
 import { constants } from 'src/app/constants';
 import { AudioService } from 'src/app/services/audio/audio.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { Utils } from 'src/app/helpers/utils';
 
 @Component({
   selector: 'app-chat-page',
@@ -81,6 +82,7 @@ export class ChatPageComponent implements OnInit {
   searchControl = new FormControl('');
   messageControl = new FormControl('');
   currentUser = this.userService.currentUserProfile;
+  currentUserId!: string;
   selectedChatId = '';
   nameOfNewChatGroup = '';
   isGroupChat = false;
@@ -121,6 +123,7 @@ export class ChatPageComponent implements OnInit {
     private audioService: AudioService,
     private toastService: ToastService
   ) {
+    this.currentUserId = Utils.getUserId();
     this.selectedForm = this.formBuilder.group({
       selectedMemberIds: [],
     });

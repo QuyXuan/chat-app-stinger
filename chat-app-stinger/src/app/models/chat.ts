@@ -3,6 +3,7 @@ import { ProfileUser } from './profile-user';
 
 export interface Chat {
   id: string;
+  fromUser?: any;
   lastMessage?: string;
   lastMessageDate?: Date & Timestamp;
   userIds: string[];

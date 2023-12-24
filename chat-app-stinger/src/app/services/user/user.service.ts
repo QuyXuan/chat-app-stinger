@@ -5,6 +5,8 @@ import {
   doc,
   docData,
   Firestore,
+  getDoc,
+  getDocs,
   query,
   setDoc,
   updateDoc,
@@ -35,7 +37,7 @@ export class UserService {
     return collectionData(queryAll) as Observable<ProfileUser[]>;
   }
 
-  constructor(private firestore: Firestore, private authService: AuthService) {}
+  constructor(private firestore: Firestore, private authService: AuthService) { }
 
   addUser(user: ProfileUser): Observable<any> {
     const ref = doc(this.firestore, 'users', user?.uid);
@@ -61,5 +63,15 @@ export class UserService {
     return collectionData(queryUser, { idField: 'uid' }) as Observable<
       ProfileUser[]
     >;
+  }
+
+  async getUserIdByEmail(email: string): Promise<string | undefined> {
+    const usersRef = collection(this.firestore, 'users');
+    const queryUser = query(usersRef, where('email', '==', email));
+    const querySnapshot = await getDocs(queryUser);
+    if (querySnapshot.size == 1) {
+      return querySnapshot.docs[0].data()['uid'];
+    }
+    return undefined;
   }
 }
