@@ -20,5 +20,5 @@ export const environment = {
     appId: '1:1049103334314:web:9bb2660adbeb221f0e49d3',
     measurementId: 'G-38ZEMQDL0K',
   },
-  serverRemote: 'https://stinger-chat-app-db28aac7bf85.herokuapp.com/',
+  serverRemote: 'https://chatapp-stinger-server.onrender.com/',
 };

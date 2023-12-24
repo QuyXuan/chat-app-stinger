@@ -1,87 +1,86 @@
 import { Injectable } from '@angular/core';
 import {
+  DocumentData,
   Firestore,
   Timestamp,
   addDoc,
   collection,
   collectionData,
   doc,
-  getDoc,
+  onSnapshot,
   query,
   updateDoc,
   where,
 } from '@angular/fire/firestore';
-import { Observable, from, map } from 'rxjs';
+import { Observable, Observer, from, map } from 'rxjs';
 import { Doc } from 'src/app/models/doc';
+import { UserService } from '../user/user.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DocService {
-  constructor(private firestore: Firestore) {}
+  currentUserName: string = '';
 
-  createDoc(userIds: string[], docName: string): Observable<string> {
-    debugger;
+  constructor(private firestore: Firestore, private userService: UserService) {
+    this.userService.currentUserProfile.subscribe((currentUser) => {
+      this.currentUserName = currentUser!.displayName ?? '';
+    });
+  }
+
+  createDoc(
+    userIds: string[],
+    chatId: string,
+    docName: string
+  ): Observable<string> {
     const docsRef = collection(this.firestore, 'docs');
     const newDocRef = addDoc(docsRef, {
+      chatId: chatId,
       userIds: userIds,
+      userIdsConverted: this.convertUserIds(userIds),
       docName: docName,
       content: '',
+      changeBy: this.currentUserName,
       lastChange: Timestamp.fromDate(new Date()),
     });
     return from(newDocRef).pipe(map((docRef) => docRef.id));
   }
 
   updateDoc(docId: string, content: string): Observable<void> {
-    const docRef = doc(this.firestore, 'documents', docId);
+    const docRef = doc(this.firestore, 'docs', docId);
     const updatePayload = {
       content: content,
       lastChange: Timestamp.fromDate(new Date()),
+      changeBy: this.currentUserName,
     };
     return from(updateDoc(docRef, updatePayload));
   }
 
   getDocData(docId: string): Observable<Doc> {
     const docRef = doc(this.firestore, 'docs', docId);
-    return from(getDoc(docRef)).pipe(
-      map((docSnapshot) => {
+    return new Observable((observer: Observer<Doc>) => {
+      const unsubscribe = onSnapshot(docRef, (docSnapshot) => {
         if (docSnapshot.exists()) {
-          const data = docSnapshot.data();
-          return { ...data } as Doc;
+          const data = docSnapshot.data() as DocumentData;
+          observer.next({ ...data, id: docSnapshot.id } as Doc);
         } else {
-          throw new Error('Document not found!');
+          observer.error(new Error('Document not found!'));
         }
-      })
-    );
+      });
+      return { unsubscribe };
+    });
   }
 
-  getDocs(userIds: string[]): Observable<Doc[]> {
+  getDocs(userIds: string[], chatId: string): Observable<Doc[]> {
     const queryDoc = query(
       collection(this.firestore, 'docs'),
-      where('userIds', 'in', this.getPermutations(userIds))
+      where('userIdsConverted', '==', this.convertUserIds(userIds)),
+      where('chatId', '==', chatId)
     );
     return collectionData(queryDoc, { idField: 'id' }) as Observable<Doc[]>;
   }
 
-  private getPermutations(arr: any[]): any[] {
-    const result: any[] = [];
-    const generatePermutations = (
-      permArr: any[],
-      remainingItems: any[]
-    ): void => {
-      if (remainingItems.length === 0) {
-        result.push(permArr.slice());
-      } else {
-        for (let i = 0; i < remainingItems.length; i++) {
-          let newPermArr = permArr.concat(remainingItems[i]);
-          let newRemainingItems = remainingItems
-            .slice(0, i)
-            .concat(remainingItems.slice(i + 1));
-          generatePermutations(newPermArr, newRemainingItems);
-        }
-      }
-    };
-    generatePermutations([], arr);
-    return result;
+  private convertUserIds(userIds: string[]) {
+    return userIds.join('').split('').sort().join('');
   }
 }

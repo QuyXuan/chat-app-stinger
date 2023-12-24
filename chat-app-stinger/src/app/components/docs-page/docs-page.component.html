@@ -1,15 +1,30 @@
 <header>
-  <div class="d-flex justify-content-start align-items-center gap-3">
-    <fa-icon
-      class="arrow-back"
-      [icon]="faIcon.faArrowLeft"
-      (click)="goBack()"
-    ></fa-icon>
-    <img
-      src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png"
-      alt="doc"
-    />
-    <p class="doc-name">{{ docName }}</p>
+  <div class="d-flex justify-content-between align-items-center px-4">
+    <div class="d-flex justify-content-center align-items-center gap-3">
+      <fa-icon
+        class="arrow-back"
+        [icon]="faIcon.faArrowLeft"
+        (click)="goBack()"
+      ></fa-icon>
+      <img src="../../../assets/img/gg-doc.png" alt="doc" />
+      <div class="doc-desc d-flex flex-column">
+        <p class="doc-name">{{ docName }}</p>
+        <div class="d-flex justify-content-center align-items-center">
+          <p class="last-change">
+            Last change:
+            {{ lastChange | dateDisplay }}&nbsp;&nbsp;&nbsp;&nbsp;
+          </p>
+          <p class="change-by">
+            <fa-icon class="arrow-back" [icon]="faIcon.faUserEdit"></fa-icon
+            >&nbsp;{{ changeBy }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="downloadDoc()">
+      <fa-icon class="arrow-back" [icon]="faIcon.faDownload"></fa-icon
+      >&nbsp;&nbsp;Download
+    </button>
   </div>
 </header>
 <div class="container d-flex justify-content-center">

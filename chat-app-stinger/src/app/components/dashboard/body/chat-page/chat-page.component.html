@@ -97,7 +97,7 @@
           <ng-template #popTitle>Menu</ng-template>
           <ng-template #popContent>
             <ul class="list-opt">
-              <li *ngIf="isGroupChat">
+              <li *ngIf="isGroupChat" class="mb-1">
                 <button
                   type="button"
                   class="btn btn-light"
@@ -507,17 +507,27 @@
   <div class="modal-body">
     <div class="list-docs custom-scroll mb-3">
       <div
-        *ngFor="let doc of docs"
+        *ngFor="let doc of docs | async"
         class="doc-container d-flex align-items-center justify-content-start"
+        (click)="openDoc(doc.id, modal)"
       >
         <img
           class="doc-img"
-          src="https://www.gstatic.com/images/branding/product/1x/docs_2020q4_48dp.png"
+          src="../../../../../assets/img/gg-doc.png"
           alt=""
         />
         <div class="doc-desc d-flex flex-column">
-          <p class="doc-name">Document name</p>
-          <p class="last-change">Last change: 12/19/23, 10:03 PM</p>
+          <p class="doc-name">{{ doc.docName }}</p>
+          <div class="d-flex justify-content-center align-items-center">
+            <p class="last-change">
+              Last change:
+              {{ doc.lastChange | dateDisplay }}&nbsp;&nbsp;&nbsp;&nbsp;
+            </p>
+            <p class="change-by">
+              <fa-icon class="arrow-back" [icon]="faIcon.faUserEdit"></fa-icon
+              >&nbsp;{{ doc.changeBy }}
+            </p>
+          </div>
         </div>
       </div>
     </div>

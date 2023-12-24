@@ -109,12 +109,17 @@ class TCPServer {
                 socket.on('audio', (data) => {
                     console.log('audio: ', data);
                     this.combineChunksOfAudio(data, audioChunksMap);
-                })
+                });
 
                 socket.on('dataFiles', (data) => {
                     console.log('dataFiles: ', data);
                     this.combineChunksOfDataFiles(socket, data, uploadDataFiles, data.type);
-                })
+                });
+
+                socket.on('updateDoc', (data) => {
+                    const { docId, content, changeBy } = data;
+                    firebaseService.updateDoc(docId, content, changeBy);
+                });
 
                 socket.on('disconnect', () => {
                     console.log('Client đã ngắt kết nối');

@@ -15,6 +15,7 @@ import {
   faImage,
   faMicrophone,
   faFile,
+  faUserEdit,
 } from '@fortawesome/free-solid-svg-icons';
 import { Observable, combineLatest, map, of, startWith } from 'rxjs';
 import { Chat } from 'src/app/models/chat';
@@ -34,6 +35,7 @@ import { ToastService } from 'src/app/services/toast/toast.service';
 import { Utils } from 'src/app/helpers/utils';
 import { Timestamp } from '@angular/fire/firestore';
 import { DocService } from 'src/app/services/doc-service/doc.service';
+import { Doc } from 'src/app/models/doc';
 
 @Component({
   selector: 'app-chat-page',
@@ -60,7 +62,7 @@ export class ChatPageComponent implements OnInit {
   recordingInterval: any;
   audioBlob: any;
   audioURL = '';
-  docs: string[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+  docs: Observable<Doc[]> | undefined;
 
   // Các images đang chờ được gửi
   images: DataFile[] = [];
@@ -82,6 +84,7 @@ export class ChatPageComponent implements OnInit {
     faImage: faImage,
     faRecord: faMicrophone,
     faFile: faFile,
+    faUserEdit: faUserEdit,
   };
 
   selectedForm: FormGroup = new FormGroup({});
@@ -273,6 +276,10 @@ export class ChatPageComponent implements OnInit {
       .getUserIdsInChat(chatId)
       .then((userIds) => {
         this.userIdsInChat = userIds;
+        this.docs = this.docService.getDocs(
+          this.userIdsInChat,
+          this.selectedChatId
+        );
       })
       .catch((error) => {
         console.log('getUsersInChat: ', error);
@@ -570,7 +577,7 @@ export class ChatPageComponent implements OnInit {
     });
 
     // Tính số hàng dựa trên chiều dài của nội dung và chiều rộng của input
-    return Math.ceil(textWidth / inputWidth);
+    return totalLines;
   }
 
   openDocumentModal() {
@@ -578,30 +585,22 @@ export class ChatPageComponent implements OnInit {
   }
 
   createDoc(modal: any) {
-    debugger;
     if (this.nameOfNewDoc.trim() !== '') {
       this.docService
-        .createDoc(this.userIdsInChat, this.nameOfNewDoc.trim())
+        .createDoc(
+          this.userIdsInChat,
+          this.selectedChatId,
+          this.nameOfNewDoc.trim()
+        )
         .subscribe((docId) => {
-          //
+          this.router.navigate(['/docs', docId]);
         });
     }
     modal.close('Ok click');
   }
 
-  openDocumentModal() {
-    this.modalService.open(this.docListModal);
-  }
-
-  createDoc(modal: any) {
-    debugger;
-    if (this.nameOfNewDoc.trim() !== '') {
-      this.docService
-        .createDoc(this.userIdsInChat, this.nameOfNewDoc.trim())
-        .subscribe((docId) => {
-          //
-        });
-    }
+  openDoc(docId: string, modal: any) {
     modal.close('Ok click');
+    this.router.navigate(['/docs', docId]);
   }
 }

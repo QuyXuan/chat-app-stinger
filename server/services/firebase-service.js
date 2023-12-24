@@ -220,6 +220,23 @@ class FirebaseService {
         const userDoc = await userRef.get();
         return userDoc;
     }
+
+    async updateDoc(docId, content, changeBy) {
+        try {
+            const db = admin.firestore();
+            const docRef = db.collection('docs').doc(docId);
+            const today = admin.firestore.FieldValue.serverTimestamp();
+
+            await docRef.update({
+                content: content,
+                lastChange: today,
+                changeBy: changeBy,
+            });
+        }
+        catch (e) {
+            console.log('updateDoc' + e.message);
+        }
+    }
 }
 
 module.exports = FirebaseService;

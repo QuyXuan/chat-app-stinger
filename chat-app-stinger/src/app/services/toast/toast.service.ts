@@ -69,4 +69,14 @@ export class ToastService {
         }
       });
   }
+
+  showSaveSuccessModal() {
+    Swal.fire({
+      position: 'top-end',
+      icon: 'success',
+      title: 'Your work has been saved',
+      showConfirmButton: false,
+      timer: 1000,
+    });
+  }
 }

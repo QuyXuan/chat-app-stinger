@@ -14,6 +14,20 @@ header {
 
 .doc-name {
     font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.last-change {
+    font-size: 0.8em;
+    color: #888;
+    margin-bottom: 0px;
+}
+
+.change-by {
+    font-size: 0.8em;
+    color: #000000;
+    margin-bottom: 0px;
     font-weight: 600;
-    margin-left: 10px;
+    font-style: italic;
 }

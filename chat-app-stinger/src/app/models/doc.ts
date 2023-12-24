@@ -1,8 +1,10 @@
 import { Timestamp } from '@angular/fire/firestore';
 
 export interface Doc {
+  id: string;
   userIds: string[];
   content: string;
-  lastChange: Date & Timestamp;
   docName: string;
+  lastChange: Date & Timestamp;
+  changeBy: string;
 }

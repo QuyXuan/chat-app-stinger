@@ -258,6 +258,7 @@
     transition: all .4s;
     line-height: 1.3rem;
     position: relative;
+    border: 1px solid #e2dadf;
 }
 
 .chat-content .user-info .user-name {
@@ -568,4 +569,12 @@
     font-size: 0.8em;
     color: #888;
     margin-bottom: 0px;
+}
+
+.doc-container .change-by {
+    font-size: 0.8em;
+    color: #000000;
+    margin-bottom: 0px;
+    font-weight: 600;
+    font-style: italic;
 }

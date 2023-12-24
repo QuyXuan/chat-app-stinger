@@ -16,7 +16,11 @@ import { DocsPageComponent } from './components/docs-page/docs-page.component';
 const routes: Routes = [
   { path: 'login', component: LoginPageComponent, canActivate: [loginAuth] },
   { path: 'signup', component: SignupPageComponent, canActivate: [loginAuth] },
-  { path: 'docs', component: DocsPageComponent },
+  {
+    path: 'docs/:docId',
+    component: DocsPageComponent,
+    canActivate: [authGuard],
+  },
   {
     path: 'dashboard',
     component: DashboardComponent,
