@@ -147,7 +147,7 @@
               class="chat-bubble text-break"
               [ngClass]="{ sender: message.senderId === currentUser.uid }"
             >
-              <pre [innerHTML]="message.text" class="message-text"></pre>
+              <p [innerHTML]="message.text" class="message-text"></p>
               <span
                 class="chat-date text-break"
                 [ngClass]="{ sender: message.senderId === currentUser.uid }"

@@ -100,7 +100,6 @@ export class SideBarComponent implements OnInit {
     });
 
     this.dataTransferService.newNotifications.subscribe((newNotificationsCount) => {
-      console.log('New notifications');
       this.hasNewNotifications = newNotificationsCount != 0;
     });
 
