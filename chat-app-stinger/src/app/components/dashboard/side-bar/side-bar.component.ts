@@ -26,6 +26,7 @@ import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { UserService } from 'src/app/services/user/user.service';
 import { constants } from 'src/app/constants';
+import { NotificationService } from 'src/app/services/notification/notification.service';
 
 interface SideNavToggle {
   screenWidth: number;
@@ -54,6 +55,7 @@ interface SideNavToggle {
 export class SideBarComponent implements OnInit {
   // Mặc định mới vào sẽ active menu item Chat
   selectedNavLinkId: number = 1;
+  hasNewNotifications: boolean = false;
 
   @Output() onToggleSideNav: EventEmitter<SideNavToggle> = new EventEmitter();
 
@@ -86,14 +88,20 @@ export class SideBarComponent implements OnInit {
     private toastService: ToastService,
     private router: Router,
     private dataTransferService: DataTransferService,
-    private userService: UserService
-  ) {}
+    private userService: UserService,
+    private notificationService: NotificationService
+  ) { }
   ngOnInit(): void {
     this.screenWidth = window.innerWidth;
     this.toggleCollapse();
 
     this.dataTransferService.selectedNavLink.subscribe((data: SelectedItem) => {
       this.selectedNavLinkId = data.id;
+    });
+
+    this.dataTransferService.newNotifications.subscribe((newNotificationsCount) => {
+      console.log('New notifications');
+      this.hasNewNotifications = newNotificationsCount != 0;
     });
 
     if (this.router.url.includes('people')) {

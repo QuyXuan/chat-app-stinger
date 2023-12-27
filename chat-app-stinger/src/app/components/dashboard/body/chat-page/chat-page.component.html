@@ -42,7 +42,14 @@
             <p class="user-name text-nowrap line-clamp line1">
               {{ chat.chatName ?? chat.groupChatName }}
             </p>
-            <p class="content text-nowrap line-clamp line1">
+            <p class="content line-clamp line1">
+              <span *ngIf="chat?.fromUser">
+                {{
+                  chat.fromUser.userId === this.currentUserId
+                    ? "You"
+                    : chat.fromUser.displayName
+                }}
+              </span>
               {{ chat.lastMessage }}
             </p>
           </div>

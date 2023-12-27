@@ -22,7 +22,7 @@ export class ToastService {
   showSuccess(message: string) {
     this.toast.fire({
       icon: 'success',
-      title: message,
+      title: message
     });
   }
 

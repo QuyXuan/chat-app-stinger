@@ -82,6 +82,7 @@ class FirebaseService {
                     text: audioURL,
                     type: 'audio'
                 });
+                return today;
             }
         }
         catch (e) {
@@ -94,13 +95,17 @@ class FirebaseService {
             const db = admin.firestore();
             const userRef = db.collection('users').doc(fromUserId);
             const userDoc = await userRef.get();
+            const today = admin.firestore.FieldValue.serverTimestamp();
             if (userDoc.exists) {
                 const chatRef = db.collection('chats').doc(chatId);
                 const messageCollection = chatRef.collection('messages');
-                const today = admin.firestore.FieldValue.serverTimestamp();
 
                 await chatRef.update({
-                    lastMessage: `${userDoc.data()['displayName']} had sent ${uploadDataFiles.length} ${type}(s).`,
+                    fromUser: {
+                        userId: fromUserId,
+                        displayName: `${userDoc.data()['displayName']}`,
+                    },
+                    lastMessage: `had sent ${uploadDataFiles.length} ${type}(s).`,
                     lastMessageDate: today
                 });
 
@@ -112,6 +117,7 @@ class FirebaseService {
                     dataFiles: uploadDataFiles,
                     type: type
                 });
+                return today;
             }
         }
         catch (e) {
@@ -125,13 +131,17 @@ class FirebaseService {
             const batch = db.batch();
             const userRef = db.collection('users').doc(fromUserId);
             const userDoc = await userRef.get();
+            const today = admin.firestore.FieldValue.serverTimestamp();
             if (userDoc.exists) {
                 const chatRef = db.collection('chats').doc(chatId);
                 const messageCollection = chatRef.collection('messages');
-                const today = admin.firestore.FieldValue.serverTimestamp();
 
                 batch.update(chatRef, {
-                    lastMessage: (type === 'link') ? 'link.xyz' : message.replaceAll('<br/>', '\n'),
+                    fromUser: {
+                        userId: fromUserId,
+                        displayName: `${userDoc.data()['displayName']}`,
+                    },
+                    lastMessage: (type === 'link') ? 'link.xyz' : `: ${message.replaceAll('<br/>', '\n')}`,
                     lastMessageDate: today
                 });
 
@@ -145,10 +155,47 @@ class FirebaseService {
                 });
 
                 await batch.commit();
+                return today;
             }
         }
         catch (e) {
             console.log('saveMessageIntoDB' + e.message);
+        }
+    }
+
+    async saveDataInNotification(fromUserId, toUserId, chatId, data) {
+        try {
+            const db = admin.firestore();
+            const userDoc = await this.getUserDoc(fromUserId);
+
+            if (userDoc.exists) {
+                const today = data?.sendAt ?? admin.firestore.FieldValue.serverTimestamp();
+                let groupChatName = '';
+                if (chatId) {
+                    const chatRef = db.collection('chats').doc(chatId);
+                    groupChatName = (await chatRef.get()).data()['groupChatName'] ?? '';
+                }
+
+                let content = data.content;
+                if (data.type === 'image') {
+                    content = `${userDoc.data()['displayName']} has sent ${data.quantity} image(s)`;
+                }
+                await db.collection('notifications').add({
+                    senderId: fromUserId,
+                    senderName: userDoc.data()['displayName'],
+                    senderAvatar: userDoc.data()['photoURL'],
+                    receiverId: toUserId,
+                    chatId,
+                    groupChatName,
+                    content,
+                    type: data.type,
+                    sendAt: today,
+                    isSeen: false
+                });
+            }
+            console.log('saveDataInNotification end.');
+        } catch (error) {
+            console.log('saveDataInNotification: ', error.message);
         }
     }
 
@@ -165,6 +212,13 @@ class FirebaseService {
         catch (e) {
             console.log('getUsersInChatRoom' + e.message);
         }
+    }
+
+    async getUserDoc(userId) {
+        const db = admin.firestore();
+        const userRef = db.collection('users').doc(userId);
+        const userDoc = await userRef.get();
+        return userDoc;
     }
 }
 

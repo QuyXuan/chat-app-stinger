@@ -69,14 +69,41 @@ class TCPServer {
                     this.users.set(data.userId, socket);
                 });
 
-                socket.on('text', (data) => {
-                    console.log('Text: ', data);
-                    firebaseService.saveMessageIntoDB(data.chatId, currentUserId, data.text, data.type);
+                socket.on('addNewFriend', (data) => {
+                    console.log('addNewFriend: ', data);
+                    firebaseService.saveDataInNotification(currentUserId, data.newFriendId, '', {
+                        content: 'Sent a friend request to you.',
+                        type: 'new friend'
+                    });
+                });
+
+                socket.on('acceptNewFriend', (data) => {
+                    console.log('acceptNewFriend: ', data);
+                    firebaseService.saveDataInNotification(currentUserId, data.newFriendId, '', {
+                        content: 'He/she accepted your friend request.',
+                        type: 'accept new friend'
+                    });
                 });
 
                 socket.on('addToGroupChat', (data) => {
                     console.log('Add to group chat: ', data);
                     this.addToGroupChat(currentUserId, data.newUserIds, data.chatId);
+                });
+
+                socket.on('text', (data) => {
+                    console.log('text: ', data);
+                    firebaseService.saveMessageIntoDB(data.chatId, currentUserId, data.text, data.type)
+                        .then((sendAt) => {
+                            console.log('Check text: ', sendAt);
+                            if (sendAt) {
+                                this.sendDataToChatRoom(data.chatId, {
+                                    fromUserId: currentUserId,
+                                    content: data.text,
+                                    type: data.type,
+                                    sendAt
+                                });
+                            }
+                        });
                 });
 
                 socket.on('audio', (data) => {
@@ -153,7 +180,15 @@ class TCPServer {
             const fileNameInFirebase = `${new Date().getTime()}_${chatId}.ogg`;
             firebaseService.saveBufferToAudioFolder(bufferData, fileNameInFirebase)
                 .then((audioURL) => {
-                    firebaseService.saveAudioIntoDB(chatId, fromUserId, audioURL);
+                    firebaseService.saveAudioIntoDB(chatId, fromUserId, audioURL)
+                        .then(sendAt => {
+                            this.sendDataToChatRoom(chatId, {
+                                fromUserId,
+                                content: 'Has sent an audio record.',
+                                type: 'audio',
+                                sendAt
+                            });
+                        });
                 });
         }
         catch (e) {
@@ -168,9 +203,18 @@ class TCPServer {
                 .then((fileURL) => {
                     uploadDataFiles.push({ fileURL, fileName });
                     if (uploadDataFiles.length === dataFilesCount) {
-                        firebaseService.saveDataFilesIntoDB(chatId, fromUserId, uploadDataFiles, type).then(() => {
-                            uploadDataFiles.splice(0, uploadDataFiles.length);
-                        });
+                        firebaseService.saveDataFilesIntoDB(chatId, fromUserId, uploadDataFiles, type)
+                            .then((sendAt) => {
+                                const quantity = uploadDataFiles.length;
+                                uploadDataFiles.splice(0, uploadDataFiles.length);
+                                this.sendDataToChatRoom(chatId, {
+                                    fromUserId,
+                                    content: '',
+                                    quantity,
+                                    type: type,
+                                    sendAt
+                                });
+                            });
                     }
                 });
         }
@@ -179,18 +223,20 @@ class TCPServer {
         }
     }
 
-    sendDataToChatRoom(chatId, uploadImages) {
+    sendDataToChatRoom(chatId, data) {
         try {
+            const currentUserId = data.fromUserId;
             firebaseService.getUsersInChatRoom(chatId)
                 .then((userIds) => {
-                    console.log('Nội dung gửi: ', uploadImages);
-                    userIds.forEach((userId) => {
-                        const socket = this.users.get(userId);
-                        // socket.emit('images', uploadImages);
-                    });
-
-                    // Xoá danh sách ảnh đã upload ngay sau khi gửi xong để sẵn sàng nhận cho
-                    uploadImages.splice(0, uploadImages.length);
+                    console.log(userIds);
+                    for (const userId of userIds) {
+                        if (userId !== currentUserId) {
+                            const socket = this.users.get(userId);
+                            if (!socket) {
+                                firebaseService.saveDataInNotification(currentUserId, userId, chatId, data);
+                            }
+                        }
+                    }
                 });
         }
         catch (e) {
