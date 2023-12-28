@@ -21,10 +21,24 @@
         </div>
       </div>
     </div>
-    <button class="btn btn-primary" (click)="downloadDoc()">
-      <fa-icon class="arrow-back" [icon]="faIcon.faDownload"></fa-icon
-      >&nbsp;&nbsp;Download
-    </button>
+    <div class="d-flex gap-3">
+      <button
+        class="btn btn-secondary"
+        (click)="openClipboardModal()"
+        placement="bottom"
+        ngbTooltip="Clipboard"
+      >
+        <fa-icon class="arrow-back" [icon]="faIcon.faFileClipboard"></fa-icon>
+      </button>
+      <button
+        class="btn btn-primary"
+        (click)="downloadDoc()"
+        placement="bottom"
+        ngbTooltip="Download"
+      >
+        <fa-icon class="arrow-back" [icon]="faIcon.faDownload"></fa-icon>
+      </button>
+    </div>
   </div>
 </header>
 <div class="container d-flex justify-content-center">
@@ -39,3 +53,25 @@
   >
   </quill-editor>
 </div>
+<ng-template #clipboard let-modal>
+  <div class="modal-body d-flex justify-content-center">
+    <quill-editor
+      [(ngModel)]="hardContent"
+      [readOnly]="false"
+      [styles]="{ height: '75vh', width: '75vw', background: '#fff' }"
+      [theme]="'snow'"
+      [modules]="{ toolbar: false }"
+    >
+    </quill-editor>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss('cancel click')"
+    >
+      Cancel
+    </button>
+    <button type="button" class="btn btn-danger">Ok</button>
+  </div>
+</ng-template>

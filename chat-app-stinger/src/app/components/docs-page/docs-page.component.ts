@@ -1,6 +1,13 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import {
   faArrowLeft,
+  faFileClipboard,
   faDownload,
   faUserEdit,
 } from '@fortawesome/free-solid-svg-icons';
@@ -13,6 +20,7 @@ import { Timestamp } from '@angular/fire/firestore';
 import { Subscription } from 'rxjs';
 import { SocketService } from 'src/app/services/socket-service/socket.service';
 import { UserService } from 'src/app/services/user/user.service';
+import { ModalService } from 'src/app/services/modal/modal.service';
 
 @Component({
   selector: 'app-docs-page',
@@ -20,10 +28,12 @@ import { UserService } from 'src/app/services/user/user.service';
   styleUrls: ['./docs-page.component.css'],
 })
 export class DocsPageComponent implements OnInit {
+  @ViewChild('clipboard') clipboardModal: ElementRef | undefined;
   faIcon = {
     faArrowLeft: faArrowLeft,
     faDownload: faDownload,
     faUserEdit: faUserEdit,
+    faFileClipboard: faFileClipboard,
   };
 
   private docDataSubscription?: Subscription;
@@ -34,12 +44,15 @@ export class DocsPageComponent implements OnInit {
   lastChange: (Date & Timestamp) | undefined;
   changeBy: string = '';
   currentUsername: string = '';
+  hardContent: string = '';
+  isOtherUserSave: boolean = false;
 
   constructor(
     private docService: DocService,
     private toastService: ToastService,
     private socketService: SocketService,
     private userService: UserService,
+    private modalService: ModalService,
     private location: Location,
     private route: ActivatedRoute
   ) {
@@ -72,6 +85,10 @@ export class DocsPageComponent implements OnInit {
         this.docName = doc.docName;
         this.lastChange = doc.lastChange;
         this.changeBy = doc.changeBy;
+        this.isOtherUserSave = true;
+        if (this.hardContent === '') {
+          this.hardContent = doc.content;
+        }
       });
   }
 
@@ -94,6 +111,11 @@ export class DocsPageComponent implements OnInit {
 
   onContentChanged(event: ContentChange) {
     this.content = event.html!;
+    if (this.isOtherUserSave) {
+      this.isOtherUserSave = false;
+    } else {
+      this.hardContent = event.html!;
+    }
   }
 
   onSelectionChanged(event: SelectionChange) {
@@ -117,5 +139,9 @@ export class DocsPageComponent implements OnInit {
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+  }
+
+  openClipboardModal() {
+    this.modalService.open(this.clipboardModal, { size: 'xl' });
   }
 }
