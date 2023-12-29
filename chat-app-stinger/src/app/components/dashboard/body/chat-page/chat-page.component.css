@@ -258,6 +258,7 @@
     transition: all .4s;
     line-height: 1.3rem;
     position: relative;
+    border: 1px solid #e2dadf;
 }
 
 .chat-content .user-info .user-name {
@@ -533,4 +534,47 @@
     font-size: 1.4em;
     font-weight: bold;
     color: #333;
+}
+
+.list-docs {
+    overflow-y: auto;
+    max-height: 50vh;
+}
+
+.doc-container {
+    padding: 5px;
+    margin-bottom: 10px;
+    background: #d1d1d1;
+    border-radius: 20px;
+    width: 95%;
+    cursor: pointer;
+}
+
+.doc-container .doc-img {
+    height: 30px;
+    object-fit: cover;
+}
+
+.doc-container .doc-desc {
+    margin-left: 20px;
+}
+
+.doc-container .doc-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.doc-container .last-change {
+    font-size: 0.8em;
+    color: #888;
+    margin-bottom: 0px;
+}
+
+.doc-container .change-by {
+    font-size: 0.8em;
+    color: #000000;
+    margin-bottom: 0px;
+    font-weight: 600;
+    font-style: italic;
 }

@@ -4,6 +4,7 @@ import { DataFile } from 'src/app/components/dashboard/body/chat-page/data-file'
 import { ChatService } from '../chat/chat.service';
 import { TypeMessage } from 'src/app/models/type-message';
 import { UserService } from '../user/user.service';
+import { environment } from 'src/environments/environment';
 import { Utils } from 'src/app/helpers/utils';
 
 @Injectable({
@@ -17,8 +18,7 @@ export class SocketService {
     private chatService: ChatService,
     private userService: UserService
   ) {
-    this.tcpSocket = io('localhost:3000');
-    // this.tcpSocket = io(environment.serverRemote);
+    this.tcpSocket = io(environment.serverRemote);
 
     const accessToken = JSON.parse(localStorage.getItem('access_token') ?? '');
     this.currentUserId = accessToken.user.uid;
@@ -124,13 +124,21 @@ export class SocketService {
   }
 
   public sendRequestAddAcceptNewFriend(receiver: string, eventName: string) {
-    this.userService.getUserIdByEmail(receiver)
-      .then((newFriendId) => {
-        if (newFriendId) {
-          this.tcpSocket.emit(eventName, {
-            newFriendId
-          });
-        }
-      })
+    this.userService.getUserIdByEmail(receiver).then((newFriendId) => {
+      if (newFriendId) {
+        this.tcpSocket.emit(eventName, {
+          newFriendId,
+        });
+      }
+    });
+  }
+
+  public updateDoc(docId: string, content: string, changeBy: string) {
+    this.tcpSocket.emit('updateDoc', {
+      fromUser: this.currentUserId,
+      docId: docId,
+      content: content,
+      changeBy: changeBy,
+    });
   }
 }

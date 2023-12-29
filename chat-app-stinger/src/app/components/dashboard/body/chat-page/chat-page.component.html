@@ -97,7 +97,7 @@
           <ng-template #popTitle>Menu</ng-template>
           <ng-template #popContent>
             <ul class="list-opt">
-              <li *ngIf="isGroupChat">
+              <li *ngIf="isGroupChat" class="mb-1">
                 <button
                   type="button"
                   class="btn btn-light"
@@ -105,6 +105,16 @@
                 >
                   <fa-icon [icon]="faIcon.faPlus"></fa-icon>&nbsp;&nbsp;Add
                   member
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  class="btn btn-light"
+                  (click)="openDocumentModal()"
+                >
+                  <fa-icon [icon]="faIcon.faFile"></fa-icon
+                  >&nbsp;&nbsp;Documents
                 </button>
               </li>
             </ul>
@@ -480,6 +490,67 @@
       (click)="sendAudioRecord(modal)"
     >
       Send audio
+    </button>
+  </div>
+</ng-template>
+<!-- document-modal -->
+<ng-template #doc_list let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-title">List of documents</h4>
+    <button
+      type="button"
+      class="btn-close"
+      aria-describedby="modal-title"
+      (click)="modal.dismiss('Cross click')"
+    ></button>
+  </div>
+  <div class="modal-body">
+    <div class="list-docs custom-scroll mb-3">
+      <div
+        *ngFor="let doc of docs | async"
+        class="doc-container d-flex align-items-center justify-content-start"
+        (click)="openDoc(doc.id, modal)"
+      >
+        <img
+          class="doc-img"
+          src="../../../../../assets/img/gg-doc.png"
+          alt=""
+        />
+        <div class="doc-desc d-flex flex-column">
+          <p class="doc-name">{{ doc.docName }}</p>
+          <div class="d-flex justify-content-center align-items-center">
+            <p class="last-change">
+              Last change:
+              {{ doc.lastChange | dateDisplay }}&nbsp;&nbsp;&nbsp;&nbsp;
+            </p>
+            <p class="change-by">
+              <fa-icon class="arrow-back" [icon]="faIcon.faUserEdit"></fa-icon
+              >&nbsp;{{ doc.changeBy }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="input-group">
+      <span class="input-group-text" id="basic-addon1">Document name</span>
+      <input
+        [(ngModel)]="nameOfNewDoc"
+        type="text"
+        class="form-control"
+        aria-describedby="basic-addon1"
+      />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss('cancel click')"
+    >
+      Cancel
+    </button>
+    <button type="button" class="btn btn-danger" (click)="createDoc(modal)">
+      Ok
     </button>
   </div>
 </ng-template>

@@ -1,0 +1,77 @@
+<header>
+  <div class="d-flex justify-content-between align-items-center px-4">
+    <div class="d-flex justify-content-center align-items-center gap-3">
+      <fa-icon
+        class="arrow-back"
+        [icon]="faIcon.faArrowLeft"
+        (click)="goBack()"
+      ></fa-icon>
+      <img src="../../../assets/img/gg-doc.png" alt="doc" />
+      <div class="doc-desc d-flex flex-column">
+        <p class="doc-name">{{ docName }}</p>
+        <div class="d-flex justify-content-center align-items-center">
+          <p class="last-change">
+            Last change:
+            {{ lastChange | dateDisplay }}&nbsp;&nbsp;&nbsp;&nbsp;
+          </p>
+          <p class="change-by">
+            <fa-icon class="arrow-back" [icon]="faIcon.faUserEdit"></fa-icon
+            >&nbsp;{{ changeBy }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex gap-3">
+      <button
+        class="btn btn-secondary"
+        (click)="openClipboardModal()"
+        placement="bottom"
+        ngbTooltip="Clipboard"
+      >
+        <fa-icon class="arrow-back" [icon]="faIcon.faFileClipboard"></fa-icon>
+      </button>
+      <button
+        class="btn btn-primary"
+        (click)="downloadDoc()"
+        placement="bottom"
+        ngbTooltip="Download"
+      >
+        <fa-icon class="arrow-back" [icon]="faIcon.faDownload"></fa-icon>
+      </button>
+    </div>
+  </div>
+</header>
+<div class="container d-flex justify-content-center">
+  <quill-editor
+    [(ngModel)]="content"
+    [readOnly]="false"
+    [styles]="{ height: '80vh', width: '85vw', background: '#fff' }"
+    [theme]="'snow'"
+    [placeholder]="'Insert text here...'"
+    (onContentChanged)="onContentChanged($event)"
+    (onSelectionChanged)="onSelectionChanged($event)"
+  >
+  </quill-editor>
+</div>
+<ng-template #clipboard let-modal>
+  <div class="modal-body d-flex justify-content-center">
+    <quill-editor
+      [(ngModel)]="hardContent"
+      [readOnly]="false"
+      [styles]="{ height: '75vh', width: '75vw', background: '#fff' }"
+      [theme]="'snow'"
+      [modules]="{ toolbar: false }"
+    >
+    </quill-editor>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-secondary"
+      (click)="modal.dismiss('cancel click')"
+    >
+      Cancel
+    </button>
+    <button type="button" class="btn btn-danger">Ok</button>
+  </div>
+</ng-template>

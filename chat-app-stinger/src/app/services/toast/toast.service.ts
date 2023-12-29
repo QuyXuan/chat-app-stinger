@@ -22,7 +22,7 @@ export class ToastService {
   showSuccess(message: string) {
     this.toast.fire({
       icon: 'success',
-      title: message
+      title: message,
     });
   }
 
@@ -68,5 +68,15 @@ export class ToastService {
           document.body.removeChild(downloadLink);
         }
       });
+  }
+
+  showSaveSuccessModal() {
+    Swal.fire({
+      position: 'top-end',
+      icon: 'success',
+      title: 'Your work has been saved',
+      showConfirmButton: false,
+      timer: 1000,
+    });
   }
 }

@@ -1,0 +1,33 @@
+header {
+    background-color: #fff;
+    color: #1a1a1a;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.75);
+}
+
+.arrow-back {
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+}
+
+.doc-name {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.last-change {
+    font-size: 0.8em;
+    color: #888;
+    margin-bottom: 0px;
+}
+
+.change-by {
+    font-size: 0.8em;
+    color: #000000;
+    margin-bottom: 0px;
+    font-weight: 600;
+    font-style: italic;
+}
