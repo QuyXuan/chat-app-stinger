@@ -13,7 +13,6 @@ export class NotificationService {
 
   getNotifications(): Observable<NotificationData[]> {
     const userId = Utils.getUserId();
-    console.log('id: ', userId);
     const notificationQuery = query(
       collection(this.firestore, 'notifications'),
       where('receiverId', '==', userId),

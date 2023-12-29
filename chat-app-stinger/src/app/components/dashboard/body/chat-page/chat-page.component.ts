@@ -31,6 +31,7 @@ import { constants } from 'src/app/constants';
 import { AudioService } from 'src/app/services/audio/audio.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { Utils } from 'src/app/helpers/utils';
+import { Timestamp } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-chat-page',
@@ -82,7 +83,12 @@ export class ChatPageComponent implements OnInit {
   searchControl = new FormControl('');
   messageControl = new FormControl('');
   currentUser = this.userService.currentUserProfile;
+
+  // Current user info
   currentUserId!: string;
+  displayName!: string;
+  avatar!: string;
+
   selectedChatId = '';
   nameOfNewChatGroup = '';
   isGroupChat = false;
@@ -127,6 +133,12 @@ export class ChatPageComponent implements OnInit {
     this.selectedForm = this.formBuilder.group({
       selectedMemberIds: [],
     });
+
+    this.currentUser.subscribe(profileUser => {
+      this.avatar = profileUser?.photoURL ?? constants.DEFAULT_AVATAR_URL;
+      this.displayName = profileUser?.displayName ?? 'Stinger';
+    });
+
     const currentNavigation = this.router.getCurrentNavigation();
     if (currentNavigation?.extras?.state) {
       const chatId = currentNavigation.extras.state['chatId'];
@@ -185,17 +197,22 @@ export class ChatPageComponent implements OnInit {
     ) {
       return;
     }
+
     if (this.messageControl.value?.trim() !== '') {
       if (constants.URL_REGEX.test(this.messageControl.value!)) {
+        const content = this.messageControl.value!;
+        this.addMessageIntoPageImmediately(TypeMessage.Link, content);
         this.socketService.sendMessage(
           this.selectedChatId,
-          this.messageControl.value!,
+          content,
           TypeMessage.Link
         );
       } else {
+        const content = this.messageControl.value!.replaceAll('\n', '<br/>');
+        this.addMessageIntoPageImmediately(TypeMessage.Text, content);
         this.socketService.sendMessage(
           this.selectedChatId,
-          this.messageControl.value!.replaceAll('\n', '<br/>'),
+          content,
           TypeMessage.Text
         );
       }
@@ -221,6 +238,27 @@ export class ChatPageComponent implements OnInit {
     this.scrollToBottom();
     this.messageControl.setValue('');
     this.currentRows = 1;
+  }
+
+  createMessage(typeMessage: string, content: string): Message {
+    return {
+      text: content,
+      senderId: this.currentUserId,
+      sentDate: Timestamp.now(),
+      type: typeMessage,
+      displayName: this.displayName,
+      avatar: this.avatar
+    };
+  }
+
+  addMessageIntoPageImmediately(typeMessage: string, content: string) {
+    const newMessage = this.createMessage(typeMessage, content);
+    this.messages?.subscribe(currentMessages => {
+      currentMessages.push(newMessage);
+      this.messages = new Observable<Message[]>(observer => {
+        observer.next([...currentMessages]);
+      });
+    })
   }
 
   getUsersInChat(chatId: string) {
@@ -480,8 +518,8 @@ export class ChatPageComponent implements OnInit {
           this.addFileImageToList(blob);
         }
       } else if (item.type.indexOf('text/plain') !== -1) {
-        this.textareaContent += event.clipboardData.getData('text/plain');
-        this.currentRows = Math.min(this.calculateNumberOfLines(this.textareaContent, this.inputContent.nativeElement), 10);
+        const text = this.textareaContent + event.clipboardData.getData('text/plain');
+        this.currentRows = Math.min(this.calculateNumberOfLines(text, this.inputContent.nativeElement), 10);
       }
     }
   }
@@ -502,12 +540,19 @@ export class ChatPageComponent implements OnInit {
     }
 
     context.font = getComputedStyle(inputElement).font;
-    const textWidth = context.measureText(textContent).width;
 
+    // Tính tổng số hàng được dùng để hiển thị text
     // Chiều rộng hiện tại của input
     const inputWidth = inputElement.clientWidth;
+    let totalLines = 0;
+    const textInLines: string[] = textContent.split('\n');
+    totalLines += textInLines.length;
+    textInLines.forEach(text => {
+      const line = Math.ceil(context.measureText(text).width / inputWidth);
+      totalLines += line - 1;
+    });
 
     // Tính số hàng dựa trên chiều dài của nội dung và chiều rộng của input
-    return Math.ceil(textWidth / inputWidth);
+    return totalLines;
   }
 }

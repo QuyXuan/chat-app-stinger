@@ -90,6 +90,7 @@
 
 .chat-main .info-item .chat-box .details {
     padding: 12px 50px 13px 64px;
+    max-width: 100%;
 }
 
 .profile img {

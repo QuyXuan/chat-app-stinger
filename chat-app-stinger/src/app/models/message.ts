@@ -3,7 +3,7 @@ import { Timestamp } from '@angular/fire/firestore';
 export interface Message {
   text?: string;
   senderId: string;
-  sentDate: Date & Timestamp;
+  sentDate: Timestamp;
   avatar: string;
   displayName: string;
   type: string;
