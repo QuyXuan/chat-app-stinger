@@ -364,7 +364,8 @@
     overflow: auto;
 }
 
-.chat-input .input-content {
+.chat-input .input-content,
+.chat-input .edit-message-content {
     width: 100%;
     min-height: 40px;
     border: none;
@@ -577,4 +578,120 @@
     margin-bottom: 0px;
     font-weight: 600;
     font-style: italic;
+}
+
+/* Edit message */
+.hidden {
+    visibility: hidden;
+}
+
+.chat-bubble-container .message-text-block {
+    position: relative;
+    display: flex;
+    align-items: center;
+    max-width: 62.5%;
+    margin-bottom: 16px;
+}
+
+.chat-bubble-container .message-text-block .options-block {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.message-text-block .options-block .option {
+    border: none;
+    background: transparent;
+}
+
+.chat-bubble-container .message-text-block .chat-bubble {
+    max-width: 100%;
+    margin-bottom: 0;
+}
+
+.options-block .options-menu {
+    padding: 10px;
+    width: 97px;
+    background-color: #ece9e9;
+    position: absolute;
+    bottom: 31px;
+    left: -40px;
+}
+
+.options-block .options-menu::after {
+    content: "";
+    position: absolute;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-top: 12px solid #ece9e9;
+    bottom: -12px;
+    left: 36px;
+    z-index: 1;
+}
+
+.options-block .options-menu .option {
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input .edit-message-block {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    position: absolute;
+    background-color: white;
+    left: 0;
+    bottom: 0;
+}
+
+.edit-message-block .button-group button {
+    width: initial;
+    height: initial;
+    background: transparent !important;
+    margin-left: 0;
+}
+
+.edit-message-block .button-group .btn-xmark {
+    color: red;
+}
+
+.edit-message-block .button-group .btn-accept {
+    color: green;
+}
+
+.chat-input .edit-message-block .button-group {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    margin-left: 5px;
+}
+
+.edit-message-block .edit-message-content {
+    margin: 0 0 0 10px;
+}
+
+.chat-input .edit-message-block textarea {
+    width: calc(100% - 50px);
+    min-height: 40px;
+}
+
+.message-text-block.edited::before {
+    z-index: 1;
+    content: "Edited";
+    position: absolute;
+    top: -14px;
+    left: 20px;
+    font-size: 12px;
+    color: gray;
+}
+
+.message-text-block.sender::before {
+    top: -15px;
+    left: 74px;
+}
+
+.edit-message-block .btn-accept:disabled .icon {
+    color: gray;
 }

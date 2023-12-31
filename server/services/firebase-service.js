@@ -1,4 +1,5 @@
 const admin = require('firebase-admin');
+const uuid = require('uuid');
 const serviceAccount = require('../firebase-admin-key.json');
 const storageBucketName = 'chatappstinger.appspot.com';
 
@@ -145,7 +146,10 @@ class FirebaseService {
                     lastMessageDate: today
                 });
 
-                batch.set(messageCollection.doc(), {
+                // Tạo ra sẵn ra messageId
+                const messageId = uuid.v4();
+                batch.set(messageCollection.doc(messageId), {
+                    id: messageId,
                     senderId: fromUserId,
                     displayName: userDoc.data()['displayName'],
                     sentDate: today,
@@ -211,6 +215,20 @@ class FirebaseService {
         }
         catch (e) {
             console.log('getUsersInChatRoom' + e.message);
+        }
+    }
+
+    async editMessageContent(chatId, messageId, newContent) {
+        try {
+            const db = admin.firestore();
+            const messageRef = db.collection('chats').doc(chatId).collection('messages').doc(messageId);
+            await messageRef.update({
+                text: newContent,
+                isEdited: true
+            });
+            console.log('Message content updated successfully.');
+        } catch (error) {
+            console.log('editMessageContent: ', error.message);
         }
     }
 

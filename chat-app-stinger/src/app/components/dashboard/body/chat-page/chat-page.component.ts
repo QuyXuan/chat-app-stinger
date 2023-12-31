@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -16,6 +16,11 @@ import {
   faMicrophone,
   faFile,
   faUserEdit,
+  faFaceSmile,
+  faTrash,
+  faPencil,
+  faCheck,
+  faXmark,
 } from '@fortawesome/free-solid-svg-icons';
 import { Observable, combineLatest, map, of, startWith } from 'rxjs';
 import { Chat } from 'src/app/models/chat';
@@ -28,7 +33,7 @@ import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 import { SocketService } from 'src/app/services/socket-service/socket.service';
 import { ModalService } from 'src/app/services/modal/modal.service';
 import { UserService } from 'src/app/services/user/user.service';
-import { DataFile } from './data-file';
+import { DataFile, wrapperInputContent } from './data-file';
 import { constants } from 'src/app/constants';
 import { AudioService } from 'src/app/services/audio/audio.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
@@ -43,7 +48,8 @@ import { Doc } from 'src/app/models/doc';
   styleUrls: ['./chat-page.component.css'],
 })
 export class ChatPageComponent implements OnInit {
-  @ViewChild('inputContent') inputContent!: ElementRef;
+  @ViewChild('inputContentElement') inputContentElement!: ElementRef;
+  @ViewChild('editMessageContentElement') editMessageContentElement!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   @ViewChild('endOfChat') endOfChat: ElementRef | undefined;
   @ViewChild('create_chat_group') createChatGroupModal: ElementRef | undefined;
@@ -55,14 +61,25 @@ export class ChatPageComponent implements OnInit {
 
   isShowChatSidebar: boolean = true;
   isShowUploadDialog: boolean = false;
-  currentRows: number = 1;
-  textareaContent: string = '';
+  isShowEditMessageBlock: boolean = false;
   isRecording = false;
   recordingTime = '00:00';
   recordingInterval: any;
   audioBlob: any;
   audioURL = '';
   docs: Observable<Doc[]> | undefined;
+
+  // Data liên quan đến input của textarea và input của edit textarea
+  textAreaInput: wrapperInputContent = {
+    content: '',
+    currentRows: 1
+  };
+
+  textAreaInputEdit: wrapperInputContent = {
+    initialContent: '',
+    content: '',
+    currentRows: 1
+  };
 
   // Các images đang chờ được gửi
   images: DataFile[] = [];
@@ -85,6 +102,11 @@ export class ChatPageComponent implements OnInit {
     faRecord: faMicrophone,
     faFile: faFile,
     faUserEdit: faUserEdit,
+    faSmile: faFaceSmile,
+    faTrash: faTrash,
+    faPencil: faPencil,
+    faCheck: faCheck,
+    faXMark: faXmark
   };
 
   selectedForm: FormGroup = new FormGroup({});
@@ -98,11 +120,15 @@ export class ChatPageComponent implements OnInit {
   avatar!: string;
 
   selectedChatId = '';
+  editedMessageElement?: HTMLParagraphElement;
+  editedMessageId = '';
   nameOfNewChatGroup = '';
   isGroupChat = false;
   messageTake = constants.MESSAGE_TAKE;
   loadMessageFinished = true;
   nameOfNewDoc = '';
+  currentOptionsMenu!: HTMLElement;
+  isAllowScrollToBottom: boolean = true;
 
   myChats = combineLatest([
     this.chatService.myChats,
@@ -128,6 +154,7 @@ export class ChatPageComponent implements OnInit {
   newMembersOfGroupChat: Observable<ProfileUser[]> | undefined;
 
   constructor(
+    private cdr: ChangeDetectorRef,
     private userService: UserService,
     private chatService: ChatService,
     private router: Router,
@@ -195,6 +222,10 @@ export class ChatPageComponent implements OnInit {
         this.selectedChatId = chat.id;
         this.getUsersInChat(this.selectedChatId);
         this.scrollToBottom();
+
+        // Chỉ cho phép lúc mới vào và lúc nhấn gửi tin nhắn, tránh trường hợp 
+        // Observable lắng nghe sự kiện thì cuộn xuống dưới cùng
+        this.isAllowScrollToBottom = false;
       });
   }
 
@@ -245,9 +276,10 @@ export class ChatPageComponent implements OnInit {
       );
       this.files = [];
     }
+    this.isAllowScrollToBottom = true;
     this.scrollToBottom();
     this.messageControl.setValue('');
-    this.currentRows = 1;
+    this.textAreaInput.currentRows = 1;
   }
 
   createMessage(typeMessage: string, content: string): Message {
@@ -287,7 +319,7 @@ export class ChatPageComponent implements OnInit {
   }
 
   scrollToBottom() {
-    if (this.endOfChat) {
+    if (this.endOfChat && this.isAllowScrollToBottom) {
       const endOfChatElement = this.endOfChat.nativeElement;
       if (endOfChatElement) {
         const scrollOptions = {
@@ -357,18 +389,18 @@ export class ChatPageComponent implements OnInit {
   /**
    * Check phím người dùng bấm để xem liệu có nên cho nhập kí tự, xuống hàng hay gửi message
    */
-  onKeyDown(event: KeyboardEvent) {
-    const lines = this.textareaContent.split('\n');
+  onKeyDown(event: KeyboardEvent, data: wrapperInputContent) {
+    const lines = data.content.split('\n');
     if (event.key === 'Backspace' || event.key === 'Delete') {
       const lastLine = lines[lines.length - 1];
       // Nếu hàng cuối cùng trống, giảm số hàng
       if (lines.length == 1 || lastLine.trim() === '') {
-        this.currentRows = this.textareaContent.split('\n').length;
-        this.currentRows = Math.min(Math.max(this.currentRows - 1, 1), 10);
+        data.currentRows = data.content.split('\n').length;
+        data.currentRows = Math.min(Math.max(data.currentRows - 1, 1), 10);
       }
     } else if (event.shiftKey && event.key === 'Enter') {
-      this.currentRows++;
-      this.currentRows = Math.min(this.currentRows, 10);
+      data.currentRows++;
+      data.currentRows = Math.min(data.currentRows, 10);
     } else if (event.key === 'Enter') {
       // Nếu là Enter thì không cho nhảy xuống hàng mà gửi luôn
       event.preventDefault();
@@ -522,9 +554,8 @@ export class ChatPageComponent implements OnInit {
     this.toastService.showImageModal(imageURL);
   }
 
-  handlePaste(event: any) {
-    const items = (event.clipboardData || event.originalEvent.clipboardData)
-      .items;
+  handlePaste(event: any, textarea: wrapperInputContent) {
+    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
     for (const item of items) {
       if (item.type.indexOf('image') !== -1) {
         const blob = item.getAsFile();
@@ -533,14 +564,9 @@ export class ChatPageComponent implements OnInit {
           this.addFileImageToList(blob);
         }
       } else if (item.type.indexOf('text/plain') !== -1) {
-        this.textareaContent += event.clipboardData.getData('text/plain');
-        this.currentRows = Math.min(
-          this.calculateNumberOfLines(
-            this.textareaContent,
-            this.inputContent.nativeElement
-          ),
-          10
-        );
+        const text = textarea.content + event.clipboardData.getData('text/plain');
+        textarea.currentRows = Math.min(this.calculateNumberOfLines(text, textarea == this.textAreaInput
+          ? this.inputContentElement.nativeElement : this.editMessageContentElement.nativeElement), 10);
       }
     }
   }
@@ -603,4 +629,52 @@ export class ChatPageComponent implements OnInit {
     modal.close('Ok click');
     this.router.navigate(['/docs', docId]);
   }
+
+  //#region Sửa, xoá message
+  closeOptionsMenu() {
+    if (this.currentOptionsMenu) {
+      this.currentOptionsMenu.classList.add('hidden');
+    }
+  }
+
+  openOptionsMenu(event: MouseEvent) {
+    const button = event.target as HTMLElement;
+    const optionsMenu = button.closest('.options-block')?.querySelector('.options-menu') as HTMLElement | null;
+    if (optionsMenu) {
+      this.currentOptionsMenu = optionsMenu;
+      optionsMenu.classList.toggle('hidden');
+    }
+    event.stopPropagation();
+  }
+
+  handleEditMessage(event: MouseEvent, messageId?: string) {
+    this.editedMessageId = messageId ?? '';
+    const button = event.target as HTMLElement;
+    this.editedMessageElement = button.closest('.message-text-block')?.querySelector('.chat-bubble .message-text') ?? undefined;
+    this.textAreaInputEdit.content = button.closest('.message-text-block')
+      ?.querySelector('.chat-bubble .message-text')?.innerHTML.replaceAll('<br>', '\n') ?? '';
+    this.textAreaInputEdit.initialContent = this.textAreaInputEdit.content;
+
+    // Tính toán lại số hàng của textarea sau khi gán dữ liệu mới vào
+    this.isShowEditMessageBlock = true;
+
+    // Gọi detectChanges() để cập nhật lại DOM vì trước đây textAreaInputEdit chưa được thêm vào DOM vì ban đầu bị hidden
+    this.cdr.detectChanges();
+
+    this.textAreaInputEdit.currentRows = Math.min(this.calculateNumberOfLines(this.textAreaInputEdit.content,
+      this.editMessageContentElement.nativeElement), 10);
+  }
+
+  acceptChangeMessage() {
+    if (this.textAreaInputEdit.content && this.textAreaInputEdit.content != this.textAreaInputEdit.initialContent) {
+      if (this.editedMessageElement) {
+        this.editedMessageElement.innerHTML = this.textAreaInputEdit.content.replaceAll('\n', '<br/>');
+      }
+      this.socketService.editMessageContent(this.selectedChatId, this.editedMessageId,
+        this.textAreaInputEdit.content.replaceAll('\n', '<br/>'));
+      this.isShowEditMessageBlock = false;
+      this.isAllowScrollToBottom = false;
+    }
+  }
+  //#endregion
 }

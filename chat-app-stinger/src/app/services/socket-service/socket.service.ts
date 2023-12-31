@@ -141,4 +141,12 @@ export class SocketService {
       changeBy: changeBy,
     });
   }
+
+  public editMessageContent(chatId: string, messageId: string, newContent: string) {
+    this.tcpSocket.emit('editMessageContent', {
+      chatId,
+      messageId,
+      newContent
+    });
+  }
 }
