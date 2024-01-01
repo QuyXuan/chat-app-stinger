@@ -326,6 +326,7 @@
             [formControl]="messageControl"
             (keydown.enter)="sendMessage()"
             (keydown)="onKeyDown($event, this.textAreaInput)"
+            (input)="onInput($event, this.textAreaInput)"
             [(ngModel)]="this.textAreaInput.content"
             (paste)="handlePaste($event, this.textAreaInput)"
           ></textarea>
@@ -338,6 +339,7 @@
               [(ngModel)]="this.textAreaInputEdit.content"
               (keydown.enter)="acceptChangeMessage()"
               (keydown)="onKeyDown($event, this.textAreaInputEdit)"
+              (input)="onInput($event, this.textAreaInputEdit)"
               (paste)="handlePaste($event, this.textAreaInputEdit)"
             >
             </textarea>
