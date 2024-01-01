@@ -1,8 +1,10 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
-const firebaseService = require('./services/firebase.js');
+const FirebaseService = require('./services/firebase-service');
+const firebaseService = new FirebaseService();
 const helmet = require('helmet');
+const { log } = require('console');
 
 class TCPServer {
     constructor() {
@@ -104,6 +106,11 @@ class TCPServer {
                                 });
                             }
                         });
+                });
+
+                socket.on('editMessageContent', (data) => {
+                    console.log('editMessageContent: ', data);
+                    firebaseService.editMessageContent(data.chatId, data.messageId, data.newContent);
                 });
 
                 socket.on('audio', (data) => {

@@ -1,5 +1,5 @@
 <!-- main chat content -->
-<div class="main-chat-content">
+<div class="main-chat-content" (click)="closeOptionsMenu()">
   <!-- chat info -->
   <div class="chat-info">
     <div class="search-create d-flex">
@@ -153,17 +153,54 @@
               <p class="name">{{ message.displayName }}</p>
             </div>
             <div
-              *ngIf="message.type === 'text'"
-              class="chat-bubble text-break"
-              [ngClass]="{ sender: message.senderId === currentUser.uid }"
+              class="message-text-block"
+              [ngClass]="{
+                sender: message.senderId === currentUser.uid,
+                edited: message.isEdited
+              }"
             >
-              <p [innerHTML]="message.text" class="message-text"></p>
-              <span
-                class="chat-date text-break"
+              <div
+                class="options-block"
+                *ngIf="
+                  message.senderId === currentUser.uid &&
+                  message.type === 'text'
+                "
+              >
+                <button
+                  class="option btn-edit-message"
+                  (click)="openOptionsMenu($event)"
+                >
+                  <fa-icon [icon]="faIcon.faEllipsisVertical"></fa-icon>
+                </button>
+                <button class="option btn-react-message">
+                  <fa-icon [icon]="faIcon.faSmile"></fa-icon>
+                </button>
+                <div class="options-menu hidden">
+                  <button
+                    class="option"
+                    (click)="handleEditMessage($event, message.id)"
+                  >
+                    <fa-icon [icon]="faIcon.faPencil"></fa-icon>
+                    Edit
+                  </button>
+                  <button class="option">
+                    <fa-icon [icon]="faIcon.faTrash"></fa-icon> Delete
+                  </button>
+                </div>
+              </div>
+              <div
+                *ngIf="message.type === 'text'"
+                class="chat-bubble text-break"
                 [ngClass]="{ sender: message.senderId === currentUser.uid }"
               >
-                {{ message.sentDate | dateDisplay }}
-              </span>
+                <p [innerHTML]="message.text" class="message-text"></p>
+                <span
+                  class="chat-date text-break"
+                  [ngClass]="{ sender: message.senderId === currentUser.uid }"
+                >
+                  {{ message.sentDate | dateDisplay }}
+                </span>
+              </div>
             </div>
             <div
               *ngIf="message.type === 'link'"
@@ -282,16 +319,47 @@
           </div>
 
           <textarea
-            #inputContent
+            #inputContentElement
             class="input-content custom-scroll"
             placeholder="Type your message here"
-            rows="{{ currentRows }}"
+            rows="{{ this.textAreaInput.currentRows }}"
             [formControl]="messageControl"
             (keydown.enter)="sendMessage()"
-            (keydown)="onKeyDown($event)"
-            [(ngModel)]="textareaContent"
-            (paste)="handlePaste($event)"
+            (keydown)="onKeyDown($event, this.textAreaInput)"
+            [(ngModel)]="this.textAreaInput.content"
+            (paste)="handlePaste($event, this.textAreaInput)"
           ></textarea>
+
+          <div class="edit-message-block" *ngIf="isShowEditMessageBlock">
+            <textarea
+              #editMessageContentElement
+              [rows]="this.textAreaInputEdit.currentRows"
+              class="edit-message-content custom-scroll"
+              [(ngModel)]="this.textAreaInputEdit.content"
+              (keydown.enter)="acceptChangeMessage()"
+              (keydown)="onKeyDown($event, this.textAreaInputEdit)"
+              (paste)="handlePaste($event, this.textAreaInputEdit)"
+            >
+            </textarea>
+            <div class="button-group">
+              <button
+                class="btn-xmark"
+                (click)="this.isShowEditMessageBlock = false"
+              >
+                <fa-icon class="icon" [icon]="faIcon.faXMark"></fa-icon>
+              </button>
+              <button
+                class="btn-accept"
+                (click)="acceptChangeMessage()"
+                [disabled]="
+                  this.textAreaInputEdit.initialContent ==
+                  this.textAreaInputEdit.content
+                "
+              >
+                <fa-icon class="icon" [icon]="faIcon.faCheck"></fa-icon>
+              </button>
+            </div>
+          </div>
 
           <!-- Upload dialog này chỉ hiển thị khi click vào nút + -->
           <div class="upload-dialog" *ngIf="isShowUploadDialog">

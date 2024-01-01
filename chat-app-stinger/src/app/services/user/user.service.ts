@@ -5,7 +5,6 @@ import {
   doc,
   docData,
   Firestore,
-  getDoc,
   getDocs,
   query,
   setDoc,

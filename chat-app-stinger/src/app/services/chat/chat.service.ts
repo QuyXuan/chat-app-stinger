@@ -29,7 +29,7 @@ import { TypeMessage } from 'src/app/models/type-message';
   providedIn: 'root',
 })
 export class ChatService {
-  constructor(private firestore: Firestore, private userService: UserService) {}
+  constructor(private firestore: Firestore, private userService: UserService) { }
 
   get myChats(): Observable<Chat[]> {
     return this.userService.currentUserProfile.pipe(
@@ -165,7 +165,7 @@ export class ChatService {
   getChatMessages(chatId: string, take: number): Observable<Message[]> {
     const msgRef = collection(this.firestore, 'chats', chatId, 'messages');
     const queryAllMsg = query(msgRef, orderBy('sentDate', 'desc'), limit(take));
-    return collectionData(queryAllMsg) as Observable<Message[]>;
+    return collectionData(queryAllMsg, { idField: 'messageId' }) as Observable<Message[]>;
   }
 
   async getUserIdsInChat(chatId: string) {
