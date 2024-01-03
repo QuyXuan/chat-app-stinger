@@ -69,14 +69,20 @@ class FirebaseService {
                 const chatRef = db.collection('chats').doc(chatId);
                 const messageCollection = chatRef.collection('messages');
                 const today = admin.firestore.FieldValue.serverTimestamp();
+                const messageId = uuid.v4();
 
                 await chatRef.update({
+                    fromUser: {
+                        userId: fromUserId,
+                        displayName: `${userDoc.data()['displayName']}`,
+                    },
+                    messageId: messageId,
                     lastMessage: `audio.xyz`,
                     lastMessageDate: today,
-                    messageId: messageId,
                 });
 
-                await messageCollection.add({
+                await messageCollection.doc(messageId).set({
+                    id: messageId,
                     senderId: fromUserId,
                     displayName: userDoc.data()['displayName'],
                     sentDate: today,
@@ -108,9 +114,9 @@ class FirebaseService {
                         userId: fromUserId,
                         displayName: `${userDoc.data()['displayName']}`,
                     },
+                    messageId: messageId,
                     lastMessage: `had sent ${uploadDataFiles.length} ${type}(s).`,
                     lastMessageDate: today,
-                    messageId: messageId,
                 });
 
                 await messageCollection.doc(messageId).set({

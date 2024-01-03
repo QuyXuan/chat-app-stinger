@@ -26,7 +26,7 @@ import { SelectedItem } from 'src/app/services/data-transfer/selected-item';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { UserService } from 'src/app/services/user/user.service';
 import { constants } from 'src/app/constants';
-import { NotificationService } from 'src/app/services/notification/notification.service';
+import { SocketService } from 'src/app/services/socket-service/socket.service';
 
 interface SideNavToggle {
   screenWidth: number;
@@ -89,8 +89,7 @@ export class SideBarComponent implements OnInit {
     private router: Router,
     private dataTransferService: DataTransferService,
     private userService: UserService,
-    private notificationService: NotificationService
-  ) { }
+    private socketService: SocketService) { }
   ngOnInit(): void {
     this.screenWidth = window.innerWidth;
     this.toggleCollapse();
@@ -153,6 +152,7 @@ export class SideBarComponent implements OnInit {
   }
 
   logout() {
+    this.socketService.sendIsLogout();
     this.authService.logout();
     this.toastService.showSuccess('Logout successfully');
   }

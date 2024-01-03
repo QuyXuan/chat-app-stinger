@@ -4,7 +4,6 @@ import { DataFile } from 'src/app/components/dashboard/body/chat-page/data-file'
 import { ChatService } from '../chat/chat.service';
 import { TypeMessage } from 'src/app/models/type-message';
 import { UserService } from '../user/user.service';
-import { environment } from 'src/environments/environment';
 import { Utils } from 'src/app/helpers/utils';
 
 @Injectable({
@@ -21,11 +20,14 @@ export class SocketService {
     // this.tcpSocket = io(environment.serverRemote);
     this.tcpSocket = io('localhost:3000');
 
-    const accessToken = JSON.parse(localStorage.getItem('access_token') ?? '');
-    this.currentUserId = accessToken.user.uid;
-    this.tcpSocket.emit('login', {
-      userId: this.currentUserId,
-    });
+    const accessTokenString = localStorage.getItem('access_token') ?? '';
+    if (accessTokenString) {
+      const accessToken = JSON.parse(accessTokenString);
+      this.currentUserId = accessToken.user.uid;
+      this.tcpSocket.emit('login', {
+        userId: this.currentUserId,
+      });
+    }
 
     this.tcpSocket.on('addToGroupChat', (response: any) => {
       this.userService.getUsersById(response.newUserIds).subscribe((users) => {
@@ -34,6 +36,18 @@ export class SocketService {
           .subscribe();
       });
     });
+  }
+
+  public sendIsLoggedIn() {
+    this.currentUserId = Utils.getUserId();
+    this.tcpSocket.emit('login', {
+      userId: this.currentUserId
+    });
+  }
+
+  public sendIsLogout() {
+    this.currentUserId = '';
+    this.tcpSocket.emit('logout', {});
   }
 
   public sendDataFiles(
