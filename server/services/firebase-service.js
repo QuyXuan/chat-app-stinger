@@ -137,17 +137,17 @@ class FirebaseService {
                 const chatRef = db.collection('chats').doc(chatId);
                 const messageCollection = chatRef.collection('messages');
 
+                const messageId = uuid.v4();
                 batch.update(chatRef, {
                     fromUser: {
                         userId: fromUserId,
                         displayName: `${userDoc.data()['displayName']}`,
                     },
+                    messageId: messageId,
                     lastMessage: (type === 'link') ? 'link.xyz' : `: ${message.replaceAll('<br/>', '\n')}`,
                     lastMessageDate: today
                 });
 
-                // Tạo ra sẵn ra messageId
-                const messageId = uuid.v4();
                 batch.set(messageCollection.doc(messageId), {
                     id: messageId,
                     senderId: fromUserId,
@@ -221,10 +221,20 @@ class FirebaseService {
     async editMessageContent(chatId, messageId, newContent) {
         try {
             const db = admin.firestore();
-            const messageRef = db.collection('chats').doc(chatId).collection('messages').doc(messageId);
-            await messageRef.update({
-                text: newContent,
-                isEdited: true
+            const chatRef = db.collection('chats').doc(chatId);
+            const messageRef = chatRef.collection('messages').doc(messageId);
+
+            await db.runTransaction(async (transaction) => {
+                const chatDoc = await transaction.get(chatRef);
+                if (chatDoc.exists && chatDoc.data()['messageId'] === messageId) {
+                    transaction.update(chatRef, { lastMessage: `: ${newContent}` });
+                }
+
+                // Cập nhật thông tin của message
+                transaction.update(messageRef, {
+                    text: newContent,
+                    isEdited: true,
+                });
             });
             console.log('Message content updated successfully.');
         } catch (error) {

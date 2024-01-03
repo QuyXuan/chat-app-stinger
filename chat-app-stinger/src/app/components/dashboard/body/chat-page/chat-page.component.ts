@@ -41,6 +41,7 @@ import { Utils } from 'src/app/helpers/utils';
 import { Timestamp } from '@angular/fire/firestore';
 import { DocService } from 'src/app/services/doc-service/doc.service';
 import { Doc } from 'src/app/models/doc';
+import { emojiMap } from './emoji-data';
 
 @Component({
   selector: 'app-chat-page',
@@ -405,6 +406,14 @@ export class ChatPageComponent implements OnInit {
       // Nếu là Enter thì không cho nhảy xuống hàng mà gửi luôn
       event.preventDefault();
     }
+  }
+
+  onInput($event: any, data: wrapperInputContent) {
+    // Kiểm tra xem có dãy kí tự emoji nào phù hợp
+    data.content = data.content.replace(/:(\w+|\)|\()/g, (match, p1) => {
+      const emoji = emojiMap.get(`:${p1}`);
+      return emoji ?? match;
+    });
   }
 
   uploadImages() {
