@@ -69,8 +69,8 @@ export class SideBarComponent implements OnInit {
   faChevronCircleDown = faChevronCircleDown;
   sideBarData = sideBarRoutingData;
   multiple: boolean = false;
-  photoURL = '';
-  displayName = '';
+  photoURL = constants.DEFAULT_AVATAR_URL;
+  displayName = 'Stinger';
 
   @HostListener('window:resize', ['$event'])
   onResize() {
