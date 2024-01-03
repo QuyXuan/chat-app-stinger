@@ -63,12 +63,16 @@ class TCPServer {
                 let uploadDataFiles = [];
                 let audioChunksMap = new Map();
 
-                console.log('Client đã kết nối');
-
                 socket.on('login', (data) => {
+                    console.log('Client đã kết nối');
                     console.log(data.userId, socket.id);
                     currentUserId = data.userId;
                     this.users.set(data.userId, socket);
+                });
+
+                socket.on('logout', () => {
+                    console.log(`Client ${currentUserId} đã ngắt kết nối`);
+                    this.users.delete(currentUserId);
                 });
 
                 socket.on('addNewFriend', (data) => {
@@ -96,7 +100,6 @@ class TCPServer {
                     console.log('text: ', data);
                     firebaseService.saveMessageIntoDB(data.chatId, currentUserId, data.text, data.type)
                         .then((sendAt) => {
-                            console.log('Check text: ', sendAt);
                             if (sendAt) {
                                 this.sendDataToChatRoom(data.chatId, {
                                     fromUserId: currentUserId,
@@ -111,6 +114,11 @@ class TCPServer {
                 socket.on('editMessageContent', (data) => {
                     console.log('editMessageContent: ', data);
                     firebaseService.editMessageContent(data.chatId, data.messageId, data.newContent);
+                });
+
+                socket.on('deleteMessage', (data) => {
+                    console.log('deleteMessage: ', data);
+                    firebaseService.deleteMessage(data.chatId, data.messageId);
                 });
 
                 socket.on('audio', (data) => {
@@ -129,7 +137,7 @@ class TCPServer {
                 });
 
                 socket.on('disconnect', () => {
-                    console.log('Client đã ngắt kết nối');
+                    console.log(`Client ${currentUserId} đã ngắt kết nối`);
                     this.users.delete(currentUserId);
                 });
             });

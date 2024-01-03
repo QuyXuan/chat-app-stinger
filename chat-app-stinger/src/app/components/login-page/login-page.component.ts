@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/services/auth/auth.service';
 import { constants } from 'src/app/constants';
@@ -10,6 +10,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { Router } from '@angular/router';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { SocketService } from 'src/app/services/socket-service/socket.service';
 
 @Component({
   selector: 'app-login-page',
@@ -42,8 +43,9 @@ export class LoginPageComponent implements OnInit {
     private authService: AuthService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private toastService: ToastService
-  ) {}
+    private toastService: ToastService,
+    private socketService: SocketService
+  ) { }
 
   passToggle() {
     this.isText = !this.isText;
@@ -56,6 +58,7 @@ export class LoginPageComponent implements OnInit {
       const { email, password } = this.loginForm.value;
       this.authService.login(email, password).subscribe({
         next: (userCredential) => {
+          this.socketService.sendIsLoggedIn();
           this.router.navigate(['/dashboard']);
           this.toastService.showSuccess('Login successfully');
         },

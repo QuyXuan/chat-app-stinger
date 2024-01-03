@@ -3,7 +3,9 @@
     <button class="logo" (click)="toggleCollapse()">
       <img [src]="photoURL" alt="Avatar" class="avatar-img" />
     </button>
-    <div class="logo-text" @fadeInOut *ngIf="collapsed">{{ displayName }}</div>
+    <div class="logo-text line-clamp" @fadeInOut *ngIf="collapsed">
+      {{ displayName }}
+    </div>
     <button
       class="btn-collapse"
       @rotate

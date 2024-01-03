@@ -11,6 +11,7 @@ import {
 import { switchMap } from 'rxjs';
 import { constants } from 'src/app/constants';
 import { AuthService } from 'src/app/services/auth/auth.service';
+import { SocketService } from 'src/app/services/socket-service/socket.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { UserService } from 'src/app/services/user/user.service';
 
@@ -54,8 +55,9 @@ export class SignupPageComponent implements OnInit {
     private userService: UserService,
     private formBuilder: FormBuilder,
     private toastService: ToastService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private socketService: SocketService
+  ) { }
 
   passToggle() {
     this.isText = !this.isText;
@@ -81,6 +83,7 @@ export class SignupPageComponent implements OnInit {
         .subscribe({
           next: (userCredential) => {
             this.router.navigate(['/dashboard']);
+            this.socketService.sendIsLoggedIn();
             this.toastService.showSuccess('Signup successfully');
           },
           error: (error) => {

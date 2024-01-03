@@ -685,5 +685,9 @@ export class ChatPageComponent implements OnInit {
       this.isAllowScrollToBottom = false;
     }
   }
+
+  handleDeleteMessage(event: MouseEvent, messageId?: string) {
+    this.toastService.showWarningDeleteMessage(event, this.selectedChatId, messageId);
+  }
   //#endregion
 }
