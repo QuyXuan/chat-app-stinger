@@ -13,7 +13,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "allowedCommonJsDependencies": ["sweetalert2"],
+            "allowedCommonJsDependencies": ["sweetalert2", "simple-peer"],
             "outputPath": "dist/chatappstinger",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -29,7 +29,7 @@
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": ["./node_modules/simple-peer/simplepeer.min.js"]
           },
           "configurations": {
             "production": {
@@ -97,7 +97,7 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": ["./node_modules/simple-peer/simplepeer.min.js"]
           }
         }
       }

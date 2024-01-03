@@ -1,0 +1,54 @@
+<div class="video-call-container">
+  <div class="row-container d-flex justify-content-between">
+    <div class="host-container">
+      <video
+        class="host-img"
+        #content_video
+        [autoplay]="true"
+        [muted]="isMutedContent"
+      ></video>
+      <div class="controls d-flex align-items-center justify-content-center">
+        <fa-icon [icon]="faIcon.faPhoneAlt" (click)="callUser()"></fa-icon>
+        <fa-icon
+          [icon]="
+            isMutedLocal
+              ? faIcon.faMicrophoneLinesSlash
+              : faIcon.faMicrophoneLines
+          "
+          (click)="triggerMicrophone()"
+        ></fa-icon>
+        <fa-icon
+          [icon]="faIcon.faPhoneSlash"
+          class="disconnect"
+          (click)="leaveCall()"
+        ></fa-icon>
+        <fa-icon
+          [icon]="isOpenedLocal ? faIcon.faVideo : faIcon.faVideoSlash"
+          (click)="triggerCamera()"
+        ></fa-icon>
+        <fa-icon
+          [icon]="isShareScreen ? faIcon.faEye : faIcon.faEyeSlash"
+          (click)="shareScreen()"
+        ></fa-icon>
+      </div>
+    </div>
+    <div class="guest-container">
+      <div class="people-joined mb-3">
+        <p>My camera</p>
+        <div class="d-flex flex-wrap gap-3">
+          <video #local_video [autoplay]="true" [muted]="true"></video>
+        </div>
+      </div>
+      <div [ngClass]="{ 'd-none': !isShareScreen }" class="people-joined">
+        <p>Other user's camera</p>
+        <div class="d-flex flex-wrap gap-3">
+          <video
+            #remote_video
+            [autoplay]="true"
+            [muted]="isMutedRemote"
+          ></video>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

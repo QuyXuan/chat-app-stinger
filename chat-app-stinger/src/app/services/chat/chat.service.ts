@@ -17,7 +17,16 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Observable, concatMap, from, map, of, switchMap, take } from 'rxjs';
+import {
+  Observable,
+  Subject,
+  concatMap,
+  from,
+  map,
+  of,
+  switchMap,
+  take,
+} from 'rxjs';
 import { UserService } from '../user/user.service';
 import { Chat } from 'src/app/models/chat';
 import { ProfileUser } from 'src/app/models/profile-user';
@@ -29,7 +38,27 @@ import { TypeMessage } from 'src/app/models/type-message';
   providedIn: 'root',
 })
 export class ChatService {
-  constructor(private firestore: Firestore, private userService: UserService) { }
+  public chatUserIdsSubject = new Subject<any>();
+  public get chatUserIdsObservable(): Observable<any> {
+    return this.chatUserIdsSubject.asObservable();
+  }
+
+  public openVideoCallSubject = new Subject<any>();
+  public get openVideoCallObservable(): Observable<any> {
+    return this.openVideoCallSubject.asObservable();
+  }
+
+  public closeVideoCallSubject = new Subject<any>();
+  public get closeVideoCallObservable(): Observable<any> {
+    return this.closeVideoCallSubject.asObservable();
+  }
+
+  public deleteMessageSubject = new Subject<any>();
+  public get deleteMessageObservable(): Observable<any> {
+    return this.deleteMessageSubject.asObservable();
+  }
+
+  constructor(private firestore: Firestore, private userService: UserService) {}
 
   get myChats(): Observable<Chat[]> {
     return this.userService.currentUserProfile.pipe(
@@ -165,7 +194,9 @@ export class ChatService {
   getChatMessages(chatId: string, take: number): Observable<Message[]> {
     const msgRef = collection(this.firestore, 'chats', chatId, 'messages');
     const queryAllMsg = query(msgRef, orderBy('sentDate', 'desc'), limit(take));
-    return collectionData(queryAllMsg, { idField: 'messageId' }) as Observable<Message[]>;
+    return collectionData(queryAllMsg, { idField: 'messageId' }) as Observable<
+      Message[]
+    >;
   }
 
   async getUserIdsInChat(chatId: string) {
@@ -182,6 +213,25 @@ export class ChatService {
     return docData(chatRef).pipe(
       switchMap((chat: any) => {
         return this.userService.getUsersById(chat.userIds);
+      })
+    );
+  }
+
+  getChatUserIdsExceptMe(chatId: string): Observable<string[]> {
+    const chatRef = doc(this.firestore, 'chats', chatId);
+    return this.userService.currentUserProfile.pipe(
+      take(1),
+      switchMap((currentUser) => {
+        return docData(chatRef).pipe(
+          map((chat: any) => {
+            if (!currentUser || !chat.userIds) {
+              return [];
+            }
+            return chat.userIds.filter(
+              (userId: string) => userId !== currentUser.uid
+            );
+          })
+        );
       })
     );
   }

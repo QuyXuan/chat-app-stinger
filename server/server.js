@@ -4,7 +4,6 @@ const socketIO = require('socket.io');
 const FirebaseService = require('./services/firebase-service');
 const firebaseService = new FirebaseService();
 const helmet = require('helmet');
-const { log } = require('console');
 
 class TCPServer {
     constructor() {
@@ -50,7 +49,7 @@ class TCPServer {
                 res.header('Access-Control-Allow-Origin', 'http://localhost:4200');
                 res.header('Access-Control-Allow-Methods', 'GET, POST');
                 res.header('Access-Control-Allow-Headers', 'Content-Type');
-                res.header("Content-Security-Policy", "default-src 'none'; font-src 'self' https://example.com;");
+                res.header("Content-Security-Policy", "default-src 'none'; font-src 'self' https://e...content-available-to-author-only...e.com;");
                 next();
             });
 
@@ -134,6 +133,78 @@ class TCPServer {
                 socket.on('updateDoc', (data) => {
                     const { docId, content, changeBy } = data;
                     firebaseService.updateDoc(docId, content, changeBy);
+                });
+
+                socket.on('callUser', (data) => {
+                    const usersSocketOfferedToCall = data.chatUserIds.map((userId) => {
+                        return this.users.get(userId);
+                    });
+                    usersSocketOfferedToCall.forEach((socket) => {
+                        if (socket) {
+                            console.log('send call-user');
+                            socket.emit('callUser', { response: data });
+                        }
+                    });
+                });
+
+                socket.on('answerCall', (data) => {
+                    const socketToAnswer = data.chatUserIds.map((userId) => {
+                        return this.users.get(userId);
+                    });
+                    socketToAnswer.forEach((socket) => {
+                        if (socket) {
+                            console.log('send answer-call');
+                            socket.emit('callAccepted', { response: data });
+                        }
+                    });
+                });
+
+                socket.on('triggerMicrophone', (data) => {
+                    const socketToMute = data.chatUserIds.map((userId) => {
+                        return this.users.get(userId);
+                    });
+                    socketToMute.forEach((socket) => {
+                        if (socket) {
+                            console.log('send mute');
+                            socket.emit('triggerMicrophone', { response: data });
+                        }
+                    });
+                });
+
+                socket.on('triggerCamera', (data) => {
+                    const socketToOpenCam = data.chatUserIds.map((userId) => {
+                        return this.users.get(userId);
+                    });
+                    socketToOpenCam.forEach((socket) => {
+                        if (socket) {
+                            console.log('send OpenCam');
+                            socket.emit('triggerCamera', { response: data });
+                        }
+                    });
+                });
+
+                socket.on('triggerShareScreen', (data) => {
+                    const socketToShareScreen = data.chatUserIds.map((userId) => {
+                        return this.users.get(userId);
+                    });
+                    socketToShareScreen.forEach((socket) => {
+                        if (socket) {
+                            console.log('send ShareScreen');
+                            socket.emit('triggerShareScreen', { response: data });
+                        }
+                    });
+                });
+
+                socket.on('leaveCall', (data) => {
+                    const socketToLeaveCall = data.chatUserIds.map((userId) => {
+                        return this.users.get(userId);
+                    });
+                    socketToLeaveCall.forEach((socket) => {
+                        if (socket) {
+                            console.log('send leaveCall');
+                            socket.emit('leaveCall', { response: data });
+                        }
+                    });
                 });
 
                 socket.on('disconnect', () => {

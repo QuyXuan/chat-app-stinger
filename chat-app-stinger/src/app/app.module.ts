@@ -41,6 +41,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 import { DocsPageComponent } from './components/docs-page/docs-page.component';
 import { QuillModule } from 'ngx-quill';
+import { VideoCallWidgetComponent } from './components/video-call-widget/video-call-widget.component';
 
 @NgModule({
   declarations: [
@@ -60,6 +61,7 @@ import { QuillModule } from 'ngx-quill';
     ThumbnailUploadComponent,
     FileUploadComponent,
     DocsPageComponent,
+    VideoCallWidgetComponent,
   ],
   imports: [
     provideFirebaseApp(() => initializeApp(environment.firebase)),

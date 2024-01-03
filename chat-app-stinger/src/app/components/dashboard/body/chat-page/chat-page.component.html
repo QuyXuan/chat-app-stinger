@@ -77,14 +77,11 @@
             <p class="user-name">
               {{ selectedChat.chatName ?? selectedChat.groupChatName }}
             </p>
-            <p class="desc">Online - Last seen, 2:02pm</p>
+            <p class="desc">Online</p>
           </div>
         </div>
         <div class="list-btn">
-          <button class="btn-item">
-            <fa-icon [icon]="faIcon.faPhone"></fa-icon>
-          </button>
-          <button class="btn-item">
+          <button *ngIf="!isGroupChat" class="btn-item" (click)="callVideo()">
             <fa-icon [icon]="faIcon.faVideo"></fa-icon>
           </button>
           <button
@@ -630,4 +627,8 @@
       Ok
     </button>
   </div>
+</ng-template>
+<!-- call video modal -->
+<ng-template #call_video let-modal>
+  <app-video-call-widget [videoModal]="modal"></app-video-call-widget>
 </ng-template>
