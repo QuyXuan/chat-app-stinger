@@ -470,7 +470,7 @@ export class ChatPageComponent implements OnInit {
       for (const file of files) {
         if (file.size > maxFileSize) {
           this.toastService.showError(
-            `File ${file.name} có kích thước lớn hơn 25MB và sẽ không được xử lý.`
+            `The file size exceeds 25MB. Please choose another file.`
           );
         } else if (this.isFileImage(file)) {
           this.addFileImageToList(file);
