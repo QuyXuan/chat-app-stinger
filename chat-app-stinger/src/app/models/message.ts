@@ -4,6 +4,7 @@ export interface Message {
   id?: string;
   text?: string;
   isEdited?: string;
+  isDeleted?: string;
   senderId: string;
   sentDate: Timestamp;
   avatar: string;

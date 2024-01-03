@@ -162,8 +162,7 @@
               <div
                 class="options-block"
                 *ngIf="
-                  message.senderId === currentUser.uid &&
-                  message.type === 'text'
+                  message.senderId === currentUser.uid && !message.isDeleted
                 "
               >
                 <button
@@ -177,13 +176,17 @@
                 </button>
                 <div class="options-menu hidden">
                   <button
+                    *ngIf="message.type === 'text'"
                     class="option"
                     (click)="handleEditMessage($event, message.id)"
                   >
                     <fa-icon [icon]="faIcon.faPencil"></fa-icon>
                     Edit
                   </button>
-                  <button class="option">
+                  <button
+                    class="option"
+                    (click)="handleDeleteMessage($event, message.id)"
+                  >
                     <fa-icon [icon]="faIcon.faTrash"></fa-icon> Delete
                   </button>
                 </div>
@@ -191,9 +194,37 @@
               <div
                 *ngIf="message.type === 'text'"
                 class="chat-bubble text-break"
-                [ngClass]="{ sender: message.senderId === currentUser.uid }"
+                [ngClass]="{
+                  sender: message.senderId === currentUser.uid,
+                  'is-deleted': message.isDeleted
+                }"
               >
                 <p [innerHTML]="message.text" class="message-text"></p>
+                <span
+                  *ngIf="!message.isDeleted"
+                  class="chat-date text-break"
+                  [ngClass]="{ sender: message.senderId === currentUser.uid }"
+                >
+                  {{ message.sentDate | dateDisplay }}
+                </span>
+              </div>
+              <div
+                *ngIf="message.type === 'link'"
+                class="chat-bubble text-break"
+                [ngClass]="{ sender: message.senderId === currentUser.uid }"
+              >
+                <a
+                  href="{{ message.text }}"
+                  class="text-decoration-underline"
+                  [ngClass]="
+                    message.senderId === currentUser.uid
+                      ? 'text-white'
+                      : 'text-dark'
+                  "
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >{{ message.text }}</a
+                >
                 <span
                   class="chat-date text-break"
                   [ngClass]="{ sender: message.senderId === currentUser.uid }"
@@ -201,91 +232,67 @@
                   {{ message.sentDate | dateDisplay }}
                 </span>
               </div>
-            </div>
-            <div
-              *ngIf="message.type === 'link'"
-              class="chat-bubble text-break"
-              [ngClass]="{ sender: message.senderId === currentUser.uid }"
-            >
-              <a
-                href="{{ message.text }}"
-                class="text-decoration-underline"
-                [ngClass]="
-                  message.senderId === currentUser.uid
-                    ? 'text-white'
-                    : 'text-dark'
-                "
-                target="_blank"
-                rel="noopener noreferrer"
-                >{{ message.text }}</a
-              >
-              <span
-                class="chat-date text-break"
+              <div
+                *ngIf="message.type === 'file'"
+                class="chat-bubble text-break"
                 [ngClass]="{ sender: message.senderId === currentUser.uid }"
               >
-                {{ message.sentDate | dateDisplay }}
-              </span>
-            </div>
-            <div
-              *ngIf="message.type === 'file'"
-              class="chat-bubble text-break"
-              [ngClass]="{ sender: message.senderId === currentUser.uid }"
-            >
-              <div class="file-container d-flex flex-wrap">
-                <app-file-upload
-                  *ngFor="let file of message.dataFiles"
-                  [fileName]="file.fileName"
-                  [fileNameURL]="file.fileURL"
-                  placement="top"
-                  [ngbTooltip]="file.fileName"
-                ></app-file-upload>
+                <div class="file-container d-flex flex-wrap">
+                  <app-file-upload
+                    *ngFor="let file of message.dataFiles"
+                    [fileName]="file.fileName"
+                    [fileNameURL]="file.fileURL"
+                    placement="top"
+                    [ngbTooltip]="file.fileName"
+                  ></app-file-upload>
+                </div>
+                <span
+                  class="chat-date text-break"
+                  [ngClass]="{ sender: message.senderId === currentUser.uid }"
+                >
+                  {{ message.sentDate | dateDisplay }}
+                </span>
               </div>
-              <span
-                class="chat-date text-break"
+              <div
+                *ngIf="message.type === 'image'"
+                class="chat-bubble text-break"
                 [ngClass]="{ sender: message.senderId === currentUser.uid }"
               >
-                {{ message.sentDate | dateDisplay }}
-              </span>
-            </div>
-            <div
-              *ngIf="message.type === 'image'"
-              class="chat-bubble text-break"
-              [ngClass]="{ sender: message.senderId === currentUser.uid }"
-            >
-              <div class="file-container d-flex flex-wrap">
-                <img
-                  *ngFor="let image of message.dataFiles"
-                  (click)="showModalImage(image.fileURL)"
-                  [src]="image.fileURL"
-                  class="message-image"
-                  alt="image"
-                />
+                <div class="file-container d-flex flex-wrap">
+                  <img
+                    *ngFor="let image of message.dataFiles"
+                    (click)="showModalImage(image.fileURL)"
+                    [src]="image.fileURL"
+                    class="message-image"
+                    alt="image"
+                  />
+                </div>
+                <span
+                  class="chat-date text-break"
+                  [ngClass]="{ sender: message.senderId === currentUser.uid }"
+                >
+                  {{ message.sentDate | dateDisplay }}
+                </span>
               </div>
-              <span
-                class="chat-date text-break"
+              <div
+                *ngIf="message.type === 'audio'"
+                class="chat-bubble text-break"
                 [ngClass]="{ sender: message.senderId === currentUser.uid }"
               >
-                {{ message.sentDate | dateDisplay }}
-              </span>
-            </div>
-            <div
-              *ngIf="message.type === 'audio'"
-              class="chat-bubble text-break"
-              [ngClass]="{ sender: message.senderId === currentUser.uid }"
-            >
-              <div class="w-100">
-                <audio
-                  *ngIf="message.text !== ''"
-                  [src]="message.text"
-                  controls
-                ></audio>
+                <div class="w-100">
+                  <audio
+                    *ngIf="message.text !== ''"
+                    [src]="message.text"
+                    controls
+                  ></audio>
+                </div>
+                <span
+                  class="chat-date text-break"
+                  [ngClass]="{ sender: message.senderId === currentUser.uid }"
+                >
+                  {{ message.sentDate | dateDisplay }}
+                </span>
               </div>
-              <span
-                class="chat-date text-break"
-                [ngClass]="{ sender: message.senderId === currentUser.uid }"
-              >
-                {{ message.sentDate | dateDisplay }}
-              </span>
             </div>
           </div>
           <div #endOfChat></div>

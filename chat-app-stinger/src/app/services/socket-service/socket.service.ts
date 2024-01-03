@@ -18,7 +18,8 @@ export class SocketService {
     private chatService: ChatService,
     private userService: UserService
   ) {
-    this.tcpSocket = io(environment.serverRemote);
+    // this.tcpSocket = io(environment.serverRemote);
+    this.tcpSocket = io('localhost:3000');
 
     const accessToken = JSON.parse(localStorage.getItem('access_token') ?? '');
     this.currentUserId = accessToken.user.uid;
@@ -147,6 +148,13 @@ export class SocketService {
       chatId,
       messageId,
       newContent
+    });
+  }
+
+  public deleteMessage(chatId: string, messageId: string) {
+    this.tcpSocket.emit('deleteMessage', {
+      chatId,
+      messageId
     });
   }
 }

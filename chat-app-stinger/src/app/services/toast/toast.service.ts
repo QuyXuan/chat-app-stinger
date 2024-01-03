@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import Swal from 'sweetalert2';
+import { SocketService } from '../socket-service/socket.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,7 +18,7 @@ export class ToastService {
     },
   });
 
-  constructor() {}
+  constructor(private socketService: SocketService) { }
 
   showSuccess(message: string) {
     this.toast.fire({
@@ -78,5 +79,50 @@ export class ToastService {
       showConfirmButton: false,
       timer: 1000,
     });
+  }
+
+  showWarningDeleteMessage(event: MouseEvent, chatId: string, messageId?: string) {
+    const swalWithBootstrapButtons = Swal.mixin({
+      customClass: {
+        confirmButton: 'btn btn-success',
+        cancelButton: 'btn btn-danger',
+      },
+      buttonsStyling: true,
+    });
+
+    swalWithBootstrapButtons
+      .fire({
+        text: 'This message will be delete permanently, are you sure?',
+        position: 'center',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Accept',
+        cancelButtonText: 'Cancel',
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          const button = event.target as HTMLElement;
+          const deletedMessageElement = button.closest('.message-text-block')?.querySelector('.chat-bubble .message-text') ?? undefined;
+          if (deletedMessageElement) {
+            deletedMessageElement.innerHTML = 'This message is deleted';
+            deletedMessageElement.closest('.message-text-block')?.classList.remove('edited');
+            deletedMessageElement.parentElement?.classList.add('is-deleted');
+            deletedMessageElement.nextElementSibling?.remove();
+            deletedMessageElement.parentElement?.previousElementSibling?.remove();
+          } else {
+            // Rơi vào trường hợp xoá file, ảnh, audio
+            const messageBlock = button.closest('.message-text-block')?.querySelector('.chat-bubble');
+            messageBlock?.previousElementSibling?.remove();
+            messageBlock?.classList.add('is-deleted');
+            messageBlock!.innerHTML = '';
+            const newContent = document.createElement('p');
+            newContent.style.marginBottom = '0';
+            newContent.classList.add('message-text');
+            newContent.innerHTML = 'This message is deleted';
+            messageBlock?.appendChild(newContent);
+          }
+          this.socketService.deleteMessage(chatId, messageId!);
+        }
+      });
   }
 }

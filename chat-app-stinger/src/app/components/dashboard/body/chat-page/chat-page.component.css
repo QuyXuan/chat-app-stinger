@@ -695,3 +695,10 @@
 .edit-message-block .btn-accept:disabled .icon {
     color: gray;
 }
+
+.chat-bubble.is-deleted {
+    border: 1px solid rgb(206, 208, 212);
+    color: rgb(206, 208, 212);
+    background-color: white;
+    padding-bottom: 8px;
+}

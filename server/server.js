@@ -113,6 +113,11 @@ class TCPServer {
                     firebaseService.editMessageContent(data.chatId, data.messageId, data.newContent);
                 });
 
+                socket.on('deleteMessage', (data) => {
+                    console.log('deleteMessage: ', data);
+                    firebaseService.deleteMessage(data.chatId, data.messageId);
+                });
+
                 socket.on('audio', (data) => {
                     console.log('audio: ', data);
                     this.combineChunksOfAudio(data, audioChunksMap);
