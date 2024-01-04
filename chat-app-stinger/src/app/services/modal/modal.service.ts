@@ -9,11 +9,20 @@ export class ModalService {
 
   constructor(private modalService: NgbModal) {}
 
-  open(content: any, style?: { size?: 'sm' | 'lg' | 'xl' }) {
+  open(
+    content: any,
+    style?: {
+      size?: 'sm' | 'lg' | 'xl';
+    },
+    backdrop: boolean = true,
+    keyboard: boolean = true
+  ) {
     return this.modalService
       .open(content, {
         ariaLabelledBy: 'modal-basic-title',
         size: style?.size || 'md',
+        backdrop: backdrop ? true : 'static',
+        keyboard: keyboard,
       })
       .result.then(
         (result) => {

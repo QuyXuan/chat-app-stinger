@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -50,13 +56,15 @@ import { emojiMap } from './emoji-data';
 })
 export class ChatPageComponent implements OnInit {
   @ViewChild('inputContentElement') inputContentElement!: ElementRef;
-  @ViewChild('editMessageContentElement') editMessageContentElement!: ElementRef;
+  @ViewChild('editMessageContentElement')
+  editMessageContentElement!: ElementRef;
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
   @ViewChild('endOfChat') endOfChat: ElementRef | undefined;
   @ViewChild('create_chat_group') createChatGroupModal: ElementRef | undefined;
   @ViewChild('add_member') addMemberModal: ElementRef | undefined;
   @ViewChild('audio_recorder') audioRecorderModal: ElementRef | undefined;
   @ViewChild('doc_list') docListModal: ElementRef | undefined;
+  @ViewChild('call_video') callVideoModal: ElementRef | undefined;
   @ViewChild('fileTransferInput')
   fileTransferInput!: ElementRef<HTMLInputElement>;
 
@@ -73,13 +81,13 @@ export class ChatPageComponent implements OnInit {
   // Data liên quan đến input của textarea và input của edit textarea
   textAreaInput: wrapperInputContent = {
     content: '',
-    currentRows: 1
+    currentRows: 1,
   };
 
   textAreaInputEdit: wrapperInputContent = {
     initialContent: '',
     content: '',
-    currentRows: 1
+    currentRows: 1,
   };
 
   // Các images đang chờ được gửi
@@ -107,7 +115,7 @@ export class ChatPageComponent implements OnInit {
     faTrash: faTrash,
     faPencil: faPencil,
     faCheck: faCheck,
-    faXMark: faXmark
+    faXMark: faXmark,
   };
 
   selectedForm: FormGroup = new FormGroup({});
@@ -186,6 +194,22 @@ export class ChatPageComponent implements OnInit {
       });
       this.dataService.updateSelectedNavLinkId(new SelectedItem(1, 'Chats'));
     }
+    this.chatService.openVideoCallObservable.subscribe({
+      next: async (data) => {
+        if (data.isOpened) {
+          this.selectedChatId = data.chatId;
+          try {
+            await this.callVideo();
+            data.sendData();
+          } catch (error) {
+            console.log(error);
+          }
+        }
+      },
+      error: (error) => {
+        console.log(error);
+      },
+    });
   }
 
   ngOnInit(): void {
@@ -198,6 +222,11 @@ export class ChatPageComponent implements OnInit {
         }
       }
     );
+    this.chatService.deleteMessageObservable.subscribe({
+      next: (data) => {
+        this.socketService.deleteMessage(data.chatId, data.messageId);
+      }
+    })
   }
 
   createChat(friend: ProfileUser) {
@@ -224,7 +253,7 @@ export class ChatPageComponent implements OnInit {
         this.getUsersInChat(this.selectedChatId);
         this.scrollToBottom();
 
-        // Chỉ cho phép lúc mới vào và lúc nhấn gửi tin nhắn, tránh trường hợp 
+        // Chỉ cho phép lúc mới vào và lúc nhấn gửi tin nhắn, tránh trường hợp
         // Observable lắng nghe sự kiện thì cuộn xuống dưới cùng
         this.isAllowScrollToBottom = false;
       });
@@ -564,7 +593,8 @@ export class ChatPageComponent implements OnInit {
   }
 
   handlePaste(event: any, textarea: wrapperInputContent) {
-    const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+    const items = (event.clipboardData || event.originalEvent.clipboardData)
+      .items;
     for (const item of items) {
       if (item.type.indexOf('image') !== -1) {
         const blob = item.getAsFile();
@@ -573,9 +603,17 @@ export class ChatPageComponent implements OnInit {
           this.addFileImageToList(blob);
         }
       } else if (item.type.indexOf('text/plain') !== -1) {
-        const text = textarea.content + event.clipboardData.getData('text/plain');
-        textarea.currentRows = Math.min(this.calculateNumberOfLines(text, textarea == this.textAreaInput
-          ? this.inputContentElement.nativeElement : this.editMessageContentElement.nativeElement), 10);
+        const text =
+          textarea.content + event.clipboardData.getData('text/plain');
+        textarea.currentRows = Math.min(
+          this.calculateNumberOfLines(
+            text,
+            textarea == this.textAreaInput
+              ? this.inputContentElement.nativeElement
+              : this.editMessageContentElement.nativeElement
+          ),
+          10
+        );
       }
     }
   }
@@ -648,7 +686,9 @@ export class ChatPageComponent implements OnInit {
 
   openOptionsMenu(event: MouseEvent) {
     const button = event.target as HTMLElement;
-    const optionsMenu = button.closest('.options-block')?.querySelector('.options-menu') as HTMLElement | null;
+    const optionsMenu = button
+      .closest('.options-block')
+      ?.querySelector('.options-menu') as HTMLElement | null;
     if (optionsMenu) {
       this.currentOptionsMenu = optionsMenu;
       optionsMenu.classList.toggle('hidden');
@@ -659,9 +699,15 @@ export class ChatPageComponent implements OnInit {
   handleEditMessage(event: MouseEvent, messageId?: string) {
     this.editedMessageId = messageId ?? '';
     const button = event.target as HTMLElement;
-    this.editedMessageElement = button.closest('.message-text-block')?.querySelector('.chat-bubble .message-text') ?? undefined;
-    this.textAreaInputEdit.content = button.closest('.message-text-block')
-      ?.querySelector('.chat-bubble .message-text')?.innerHTML.replaceAll('<br>', '\n') ?? '';
+    this.editedMessageElement =
+      button
+        .closest('.message-text-block')
+        ?.querySelector('.chat-bubble .message-text') ?? undefined;
+    this.textAreaInputEdit.content =
+      button
+        .closest('.message-text-block')
+        ?.querySelector('.chat-bubble .message-text')
+        ?.innerHTML.replaceAll('<br>', '\n') ?? '';
     this.textAreaInputEdit.initialContent = this.textAreaInputEdit.content;
 
     // Tính toán lại số hàng của textarea sau khi gán dữ liệu mới vào
@@ -670,24 +716,58 @@ export class ChatPageComponent implements OnInit {
     // Gọi detectChanges() để cập nhật lại DOM vì trước đây textAreaInputEdit chưa được thêm vào DOM vì ban đầu bị hidden
     this.cdr.detectChanges();
 
-    this.textAreaInputEdit.currentRows = Math.min(this.calculateNumberOfLines(this.textAreaInputEdit.content,
-      this.editMessageContentElement.nativeElement), 10);
+    this.textAreaInputEdit.currentRows = Math.min(
+      this.calculateNumberOfLines(
+        this.textAreaInputEdit.content,
+        this.editMessageContentElement.nativeElement
+      ),
+      10
+    );
   }
 
   acceptChangeMessage() {
-    if (this.textAreaInputEdit.content && this.textAreaInputEdit.content != this.textAreaInputEdit.initialContent) {
+    if (
+      this.textAreaInputEdit.content &&
+      this.textAreaInputEdit.content != this.textAreaInputEdit.initialContent
+    ) {
       if (this.editedMessageElement) {
-        this.editedMessageElement.innerHTML = this.textAreaInputEdit.content.replaceAll('\n', '<br/>');
+        this.editedMessageElement.innerHTML =
+          this.textAreaInputEdit.content.replaceAll('\n', '<br/>');
       }
-      this.socketService.editMessageContent(this.selectedChatId, this.editedMessageId,
-        this.textAreaInputEdit.content.replaceAll('\n', '<br/>'));
+      this.socketService.editMessageContent(
+        this.selectedChatId,
+        this.editedMessageId,
+        this.textAreaInputEdit.content.replaceAll('\n', '<br/>')
+      );
       this.isShowEditMessageBlock = false;
       this.isAllowScrollToBottom = false;
     }
   }
 
   handleDeleteMessage(event: MouseEvent, messageId?: string) {
-    this.toastService.showWarningDeleteMessage(event, this.selectedChatId, messageId);
+    this.toastService.showWarningDeleteMessage(
+      event,
+      this.selectedChatId,
+      messageId
+    );
   }
   //#endregion
+
+  async callVideo() {
+    return new Promise((resolve, reject) => {
+      this.modalService.open(this.callVideoModal, { size: 'xl' }, false, false);
+      this.chatService.getChatUserIdsExceptMe(this.selectedChatId).subscribe({
+        next: (userIds) => {
+          this.chatService.chatUserIdsSubject.next({
+            selectedChatId: this.selectedChatId,
+            chatUserIds: userIds,
+          });
+          resolve({});
+        },
+        error: (err) => {
+          reject(err);
+        },
+      });
+    });
+  }
 }

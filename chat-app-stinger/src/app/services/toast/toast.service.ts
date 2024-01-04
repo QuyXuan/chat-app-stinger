@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import Swal from 'sweetalert2';
 import { SocketService } from '../socket-service/socket.service';
+import { ChatService } from '../chat/chat.service';
 
 @Injectable({
   providedIn: 'root',
@@ -18,7 +19,7 @@ export class ToastService {
     },
   });
 
-  constructor(private socketService: SocketService) { }
+  constructor(private chatService: ChatService) {}
 
   showSuccess(message: string) {
     this.toast.fire({
@@ -81,7 +82,11 @@ export class ToastService {
     });
   }
 
-  showWarningDeleteMessage(event: MouseEvent, chatId: string, messageId?: string) {
+  showWarningDeleteMessage(
+    event: MouseEvent,
+    chatId: string,
+    messageId?: string
+  ) {
     const swalWithBootstrapButtons = Swal.mixin({
       customClass: {
         confirmButton: 'btn btn-success',
@@ -102,16 +107,23 @@ export class ToastService {
       .then((result) => {
         if (result.isConfirmed) {
           const button = event.target as HTMLElement;
-          const deletedMessageElement = button.closest('.message-text-block')?.querySelector('.chat-bubble .message-text') ?? undefined;
+          const deletedMessageElement =
+            button
+              .closest('.message-text-block')
+              ?.querySelector('.chat-bubble .message-text') ?? undefined;
           if (deletedMessageElement) {
             deletedMessageElement.innerHTML = 'This message is deleted';
-            deletedMessageElement.closest('.message-text-block')?.classList.remove('edited');
+            deletedMessageElement
+              .closest('.message-text-block')
+              ?.classList.remove('edited');
             deletedMessageElement.parentElement?.classList.add('is-deleted');
             deletedMessageElement.nextElementSibling?.remove();
             deletedMessageElement.parentElement?.previousElementSibling?.remove();
           } else {
             // Rơi vào trường hợp xoá file, ảnh, audio
-            const messageBlock = button.closest('.message-text-block')?.querySelector('.chat-bubble');
+            const messageBlock = button
+              .closest('.message-text-block')
+              ?.querySelector('.chat-bubble');
             messageBlock?.previousElementSibling?.remove();
             messageBlock?.classList.add('is-deleted');
             messageBlock!.innerHTML = '';
@@ -121,8 +133,24 @@ export class ToastService {
             newContent.innerHTML = 'This message is deleted';
             messageBlock?.appendChild(newContent);
           }
-          this.socketService.deleteMessage(chatId, messageId!);
+          this.chatService.deleteMessageSubject.next({ chatId, messageId });
         }
       });
+  }
+
+  showOfferCallVideo(hostName: string, onAccept: () => void) {
+    Swal.fire({
+      title: `Let's call with ${hostName} ?`,
+      text: 'Accept to join with us!',
+      icon: 'question',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'Accept',
+      showCancelButton: true,
+      cancelButtonColor: '#d33',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onAccept();
+      }
+    });
   }
 }

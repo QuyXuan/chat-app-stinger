@@ -20,4 +20,11 @@ export const environment = {
     measurementId: 'G-38ZEMQDL0K',
   },
   serverRemote: 'https://chatapp-stinger-server.onrender.com/',
+  RTCPeerConfiguration: {
+    iceServers: [
+      {
+        urls: 'stun:stun1.l.google.com:19302',
+      },
+    ],
+  },
 };
